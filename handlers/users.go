@@ -30,7 +30,6 @@ func GetUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, s)
-	return
 }
 
 // Update a update by ID

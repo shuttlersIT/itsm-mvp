@@ -20,9 +20,9 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-type ticket structs.Ticket
+//type ticket structs.Ticket
 
-var c string
+// var c string
 var conf *oauth2.Config
 
 // RandToken generates a random @l length token.
@@ -128,7 +128,13 @@ func AuthHandler(c *gin.Context) {
 	session.Set("user-firstName", u.GivenName)
 	session.Set("user-lastName", u.FamilyName)
 	session.Set("user-sub", u.Sub)
+
 	err = session.Save()
+	if err != nil {
+		log.Println(err)
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{"message": "Error while saving session. Please try again."})
+		return
+	}
 
 	//
 	userId, _ := getID(u.Email, c)
@@ -139,7 +145,6 @@ func AuthHandler(c *gin.Context) {
 	session.Set("user-lastName", u.FamilyName)
 	session.Set("user-sub", u.Sub)
 	err = session.Save()
-
 	if err != nil {
 		log.Println(err)
 		c.HTML(http.StatusBadRequest, "error.html", gin.H{"message": "Error while saving session. Please try again."})
