@@ -43,7 +43,7 @@ type Ticket struct {
 }
 
 type Asset struct {
-	ID			int `json:"id"`
+	ID			  int    `json:"id"`
 	AssetID       string `json:"asset_id"`
 	AssetType     string `json:"asset_type"`
 	AssetName     string `json:"asset_name"`

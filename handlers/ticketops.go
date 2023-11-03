@@ -1361,7 +1361,7 @@ func CreateSubCategories(c *gin.Context, scn string, cid int) int {
 	return s.SubCategoryID
 }
 
-// List all tickets
+// List all SubCategories
 func ListSubCategories(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
