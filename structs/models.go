@@ -96,6 +96,12 @@ type Department struct {
 	Emoji          string `json:"emoji"`
 }
 
+type Unit struct {
+	UnitID   int    `json:"unit_id"`
+	UnitName string `json:"unit_name"`
+	Emoji    string `json:"emoji"`
+}
+
 type Role struct {
 	RoleID   int    `json:"role_id"`
 	RoleName string `json:"role_name"`

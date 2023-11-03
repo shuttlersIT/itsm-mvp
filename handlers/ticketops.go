@@ -50,7 +50,7 @@ func UpdateSla(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
+	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ? WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -182,7 +182,7 @@ func UpdatePriority(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
+	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ? WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -314,7 +314,7 @@ func UpdateSatisfaction(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
+	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ? WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -409,8 +409,8 @@ func ListSatisfaction(c *gin.Context) {
 
 //////// POLICY ////////
 
-// Get a user ID from database
-func GetPolicy(c *gin.Context) {
+// Get a policy from database
+func GetPolicy(c *gin.Context, poid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -418,20 +418,20 @@ func GetPolicy(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	var s structs.Staff
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE id = ?", id).
-		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
+	//session := sessions.Default(c)
+	id := poid
+	var s structs.Policies
+	err := db.QueryRow("SELECT id, policy_name, embedded_link, policy_url FROM policy WHERE id = ?", id).
+		Scan(&s.PolicyID, &s.PolicyName, &s.EmbeddedLink, &s.PolicyUrl)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Policy not found"})
 		return
 	}
 	c.JSON(http.StatusOK, s)
 }
 
-// Update a update by ID
-func UpdatePolicy(c *gin.Context) {
+// Update a policy by ID
+func UpdatePolicy(c *gin.Context, poid int, pon string, pel string, purl string) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -439,23 +439,26 @@ func UpdatePolicy(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("id")
-	var s structs.Staff
+	//session := sessions.Default(c)
+	id := poid
+	policyName := pon
+	embeddedLink := pel
+	policyUrl := purl
+	var s structs.Policies
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
+	_, err := db.Exec("UPDATE policy SET policy_name = ?, embedded_link = ?, policy_url = ? WHERE id = ?", policyName, embeddedLink, policyUrl, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User updated successfully")
+	c.JSON(http.StatusOK, "Policy updated successfully")
 }
 
-// Delete a user by ID
-func DeletePolicy(c *gin.Context) {
+// Delete a policy by ID
+func DeletePolicy(c *gin.Context, poid int) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
@@ -464,7 +467,7 @@ func DeletePolicy(c *gin.Context) {
 
 	session := sessions.Default(c)
 	id := session.Get("user-id")
-	_, err := db.Exec("DELETE FROM staff WHERE id = ?", id)
+	_, err := db.Exec("DELETE FROM policy WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -472,8 +475,8 @@ func DeletePolicy(c *gin.Context) {
 	c.JSON(http.StatusOK, "User deleted successfully")
 }
 
-// Create staff
-func CreatePolicy(c *gin.Context) int {
+// Create policy
+func CreatePolicy(c *gin.Context, pon string, pel string, purl string) int {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -481,34 +484,38 @@ func CreatePolicy(c *gin.Context) int {
 		return 0
 	}
 
-	session := sessions.Default(c)
-	email := session.Get("user-email")
-	username := session.Get("user-name")
-	first_name := session.Get("user-firstName")
-	last_name := session.Get("user-lastName")
+	//session := sessions.Default(c)
+	//email := session.Get("user-email")
+	//username := session.Get("user-name")
+	//first_name := session.Get("user-firstName")
+	//last_name := session.Get("user-lastName")
 	//sub := session.Get("user-sub")
 
-	var s structs.Staff
+	policyName := pon
+	embeddedLink := pel
+	policyUrl := purl
+
+	var s structs.Policies
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
+	result, err := db.Exec("INSERT INTO policy (policy_name, embedded_link, policy_url) VALUES (?, ?, ?)", policyName, embeddedLink, policyUrl)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	s.StaffID = int(lastInsertID)
+	s.PolicyID = int(lastInsertID)
 	c.JSON(http.StatusCreated, s)
 
-	c.JSON(http.StatusOK, "User created successfully")
+	c.JSON(http.StatusOK, "Policy created successfully")
 
-	return s.StaffID
+	return s.PolicyID
 }
 
-// List all tickets
+// List all policies
 func ListPolicies(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -517,32 +524,32 @@ func ListPolicies(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, title, description, status FROM tickets")
+	rows, err := db.Query("SELECT id, policy_name, embedded_link, policy_url FROM policy")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	var policies []structs.Policies
 	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Status); err != nil {
+		var t structs.Policies
+		if err := rows.Scan(&t.PolicyID, &t.PolicyName, &t.EmbeddedLink, &t.PolicyUrl); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		tickets = append(tickets, t)
+		policies = append(policies, t)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, policies)
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 //////// POSITIONS ////////
 
-// Get a user ID from database
-func GetPositions(c *gin.Context) {
+// Get positions from database
+func GetPosition(c *gin.Context, pid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -550,20 +557,20 @@ func GetPositions(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	var s structs.Staff
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE id = ?", id).
-		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
+	//session := sessions.Default(c)
+	id := pid
+	var s structs.Position
+	err := db.QueryRow("SELECT id, position_name, emoji FROM positions WHERE id = ?", id).
+		Scan(&s.PositionID, &s.PositionName, &s.CadreName)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Position not found"})
 		return
 	}
 	c.JSON(http.StatusOK, s)
 }
 
-// Update a update by ID
-func UpdatePosition(c *gin.Context) {
+// Update a position by ID
+func UpdatePosition(c *gin.Context, pid int, pn string, cn string) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -571,41 +578,43 @@ func UpdatePosition(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("id")
-	var s structs.Staff
+	//session := sessions.Default(c)
+	id := pid
+	positionName := pn
+	cadreName := cn
+	var s structs.Position
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
+	_, err := db.Exec("UPDATE positions SET position_name = ?, cadre_name = ? WHERE id = ?", positionName, cadreName, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User updated successfully")
+	c.JSON(http.StatusOK, "Position updated successfully")
 }
 
-// Delete a user by ID
-func DeletePosition(c *gin.Context) {
+// Delete a position by ID
+func DeletePosition(c *gin.Context, pid int) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	_, err := db.Exec("DELETE FROM staff WHERE id = ?", id)
+	//session := sessions.Default(c)
+	id := pid
+	_, err := db.Exec("DELETE FROM positions WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User deleted successfully")
+	c.JSON(http.StatusOK, "Position deleted successfully")
 }
 
-// Create staff
-func CreatePosition(c *gin.Context) int {
+// Create position
+func CreatePosition(c *gin.Context, pn string, pcn string) int {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -613,35 +622,38 @@ func CreatePosition(c *gin.Context) int {
 		return 0
 	}
 
-	session := sessions.Default(c)
-	email := session.Get("user-email")
-	username := session.Get("user-name")
-	first_name := session.Get("user-firstName")
-	last_name := session.Get("user-lastName")
+	//session := sessions.Default(c)
+	//email := session.Get("user-email")
+	//username := session.Get("user-name")
+	//first_name := session.Get("user-firstName")
+	//last_name := session.Get("user-lastName")
 	//sub := session.Get("user-sub")
 
-	var s structs.Staff
+	position_name := pn
+	cadre_name := pcn
+
+	var s structs.Position
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
+	result, err := db.Exec("INSERT INTO positions (position_name, cadre_name) VALUES (?, ?)", position_name, cadre_name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	s.StaffID = int(lastInsertID)
+	s.PositionID = int(lastInsertID)
 	c.JSON(http.StatusCreated, s)
 
-	c.JSON(http.StatusOK, "User created successfully")
+	c.JSON(http.StatusOK, "Position created successfully")
 
-	return s.StaffID
+	return s.PositionID
 }
 
-// List all tickets
-func ListPositions(c *gin.Context) {
+// List all positions
+func Listpositions(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -649,32 +661,32 @@ func ListPositions(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, title, description, status FROM tickets")
+	rows, err := db.Query("SELECT id, positions_name, cadre_name FROM positions")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	var positions []structs.Position
 	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Status); err != nil {
+		var t structs.Position
+		if err := rows.Scan(&t.PositionID, &t.PositionName, &t.CadreName); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		tickets = append(tickets, t)
+		positions = append(positions, t)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, positions)
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 //////// DEPARTMENTS ////////
 
-// Get a user ID from database
-func GetDepartment(c *gin.Context) {
+// Get a department from database
+func GetDepartment(c *gin.Context, did int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -682,20 +694,20 @@ func GetDepartment(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	var s structs.Staff
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE id = ?", id).
-		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
+	//session := sessions.Default(c)
+	id := did
+	var s structs.Department
+	err := db.QueryRow("SELECT id, department_name, emoji FROM departments WHERE id = ?", id).
+		Scan(&s.DepartmentID, &s.DepartmentName, &s.Emoji)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Department not found"})
 		return
 	}
 	c.JSON(http.StatusOK, s)
 }
 
-// Update a update by ID
-func UpdateDepartment(c *gin.Context) {
+// Update a department by ID
+func UpdateDepartment(c *gin.Context, did int, dn string, em string) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -703,41 +715,44 @@ func UpdateDepartment(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("id")
-	var s structs.Staff
+	//session := sessions.Default(c)
+	id := did
+	departmentName := dn
+	emoji := em
+
+	var s structs.Department
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
+	_, err := db.Exec("UPDATE departments SET department_name = ?, emoji = ? WHERE id = ?", departmentName, emoji, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User updated successfully")
+	c.JSON(http.StatusOK, "Department updated successfully")
 }
 
-// Delete a user by ID
-func DeleteDepartment(c *gin.Context) {
+// Delete a department by ID
+func DeleteDepartment(c *gin.Context, did int) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	_, err := db.Exec("DELETE FROM staff WHERE id = ?", id)
+	//session := sessions.Default(c)
+	id := did
+	_, err := db.Exec("DELETE FROM departments WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User deleted successfully")
+	c.JSON(http.StatusOK, "Department deleted successfully")
 }
 
-// Create staff
-func CreateDepartment(c *gin.Context) int {
+// Create department
+func CreateDepartment(c *gin.Context, dn string, de string) int {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -745,34 +760,37 @@ func CreateDepartment(c *gin.Context) int {
 		return 0
 	}
 
-	session := sessions.Default(c)
-	email := session.Get("user-email")
-	username := session.Get("user-name")
-	first_name := session.Get("user-firstName")
-	last_name := session.Get("user-lastName")
+	//session := sessions.Default(c)
+	//email := session.Get("user-email")
+	//username := session.Get("user-name")
+	//first_name := session.Get("user-firstName")
+	//last_name := session.Get("user-lastName")
 	//sub := session.Get("user-sub")
 
-	var s structs.Staff
+	department_name := dn
+	emoji := de
+
+	var s structs.Department
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
+	result, err := db.Exec("INSERT INTO departments (department_name, emoji) VALUES (?, ?)", department_name, emoji)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	s.StaffID = int(lastInsertID)
+	s.DepartmentID = int(lastInsertID)
 	c.JSON(http.StatusCreated, s)
 
-	c.JSON(http.StatusOK, "User created successfully")
+	c.JSON(http.StatusOK, "Department created successfully")
 
-	return s.StaffID
+	return s.DepartmentID
 }
 
-// List all tickets
+// List all departments
 func ListDepartments(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -781,32 +799,32 @@ func ListDepartments(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, title, description, status FROM tickets")
+	rows, err := db.Query("SELECT id, department_name, emoji FROM departments")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	var departments []structs.Department
 	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Status); err != nil {
+		var t structs.Department
+		if err := rows.Scan(&t.DepartmentID, &t.DepartmentName, &t.Emoji); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		tickets = append(tickets, t)
+		departments = append(departments, t)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, departments)
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 //////// UNITS ////////
 
-// Get a user ID from database
-func GetUnit(c *gin.Context) {
+// Get a unit from database
+func GetUnit(c *gin.Context, uid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -814,20 +832,20 @@ func GetUnit(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	var s structs.Staff
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE id = ?", id).
-		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
+	//session := sessions.Default(c)
+	id := uid
+	var s structs.Unit
+	err := db.QueryRow("SELECT id, unit_name, emoji FROM units WHERE id = ?", id).
+		Scan(&s.UnitID, &s.UnitName, &s.Emoji)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unit not found"})
 		return
 	}
 	c.JSON(http.StatusOK, s)
 }
 
-// Update a update by ID
-func UpdateUnit(c *gin.Context) {
+// Update a unit by ID
+func UpdateUnit(c *gin.Context, uid int, un string, ue string) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -835,41 +853,44 @@ func UpdateUnit(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("id")
-	var s structs.Staff
+	//session := sessions.Default(c)
+	id := uid
+	unitName := un
+	emoji := ue
+
+	var s structs.Unit
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
+	_, err := db.Exec("UPDATE units SET unit_name = ?, emoji = ? WHERE id = ?", unitName, emoji, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User updated successfully")
+	c.JSON(http.StatusOK, "Unit updated successfully")
 }
 
-// Delete a user by ID
-func DeleteUnit(c *gin.Context) {
+// Delete a unit by ID
+func DeleteUnit(c *gin.Context, uid int) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	_, err := db.Exec("DELETE FROM staff WHERE id = ?", id)
+	//session := sessions.Default(c)
+	id := uid
+	_, err := db.Exec("DELETE FROM units WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User deleted successfully")
+	c.JSON(http.StatusOK, "Unit deleted successfully")
 }
 
-// Create staff
-func CreateUnit(c *gin.Context) int {
+// Create unit
+func CreateUnit(c *gin.Context, un string, ue string) int {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -877,34 +898,37 @@ func CreateUnit(c *gin.Context) int {
 		return 0
 	}
 
-	session := sessions.Default(c)
-	email := session.Get("user-email")
-	username := session.Get("user-name")
-	first_name := session.Get("user-firstName")
-	last_name := session.Get("user-lastName")
+	//session := sessions.Default(c)
+	//email := session.Get("user-email")
+	//username := session.Get("user-name")
+	//first_name := session.Get("user-firstName")
+	//last_name := session.Get("user-lastName")
 	//sub := session.Get("user-sub")
 
-	var s structs.Staff
+	unit_name := un
+	emoji := ue
+
+	var s structs.Unit
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
+	result, err := db.Exec("INSERT INTO units (unit_name, emoji) VALUES (?, ?)", unit_name, emoji)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	s.StaffID = int(lastInsertID)
+	s.UnitID = int(lastInsertID)
 	c.JSON(http.StatusCreated, s)
 
-	c.JSON(http.StatusOK, "User created successfully")
+	c.JSON(http.StatusOK, "Unit created successfully")
 
-	return s.StaffID
+	return s.UnitID
 }
 
-// List all tickets
+// List all units
 func ListUnit(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -913,32 +937,32 @@ func ListUnit(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, title, description, status FROM tickets")
+	rows, err := db.Query("SELECT id, unit_name FROM units")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	var units []structs.Unit
 	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Status); err != nil {
+		var t structs.Unit
+		if err := rows.Scan(&t.UnitID, &t.UnitName); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		tickets = append(tickets, t)
+		units = append(units, t)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, units)
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 //////// ROLES ////////
 
-// Get a user ID from database
-func GetRole(c *gin.Context) {
+// Get a role from database
+func GetRole(c *gin.Context, rid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -946,20 +970,20 @@ func GetRole(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	var s structs.Staff
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE id = ?", id).
-		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
+	//session := sessions.Default(c)
+	id := rid
+	var s structs.Role
+	err := db.QueryRow("SELECT id, role_name FROM roles WHERE id = ?", id).
+		Scan(&s.RoleID, &s.RoleName)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
 		return
 	}
 	c.JSON(http.StatusOK, s)
 }
 
-// Update a update by ID
-func UpdateRole(c *gin.Context) {
+// Update a role by ID
+func UpdateRole(c *gin.Context, rid int, rn string) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -967,41 +991,42 @@ func UpdateRole(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("id")
-	var s structs.Staff
+	//session := sessions.Default(c)
+	id := rid
+	roleName := rn
+	var s structs.Role
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
+	_, err := db.Exec("UPDATE roles SET role_name = ? WHERE id = ?", roleName, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User updated successfully")
+	c.JSON(http.StatusOK, "Role updated successfully")
 }
 
-// Delete a user by ID
-func DeleteRole(c *gin.Context) {
+// Delete a role by ID
+func DeleteRole(c *gin.Context, rid int) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	_, err := db.Exec("DELETE FROM staff WHERE id = ?", id)
+	//session := sessions.Default(c)
+	id := rid
+	_, err := db.Exec("DELETE FROM roles WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User deleted successfully")
+	c.JSON(http.StatusOK, "Role deleted successfully")
 }
 
-// Create staff
-func CreateRole(c *gin.Context) int {
+// Create Role
+func CreateRole(c *gin.Context, rn int) int {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1009,34 +1034,36 @@ func CreateRole(c *gin.Context) int {
 		return 0
 	}
 
-	session := sessions.Default(c)
-	email := session.Get("user-email")
-	username := session.Get("user-name")
-	first_name := session.Get("user-firstName")
-	last_name := session.Get("user-lastName")
+	//session := sessions.Default(c)
+	//email := session.Get("user-email")
+	//username := session.Get("user-name")
+	//first_name := session.Get("user-firstName")
+	//last_name := session.Get("user-lastName")
 	//sub := session.Get("user-sub")
 
-	var s structs.Staff
+	role_name := rn
+
+	var s structs.Role
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
+	result, err := db.Exec("INSERT INTO roles (role_name) VALUES (?)", role_name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	s.StaffID = int(lastInsertID)
+	s.RoleID = int(lastInsertID)
 	c.JSON(http.StatusCreated, s)
 
-	c.JSON(http.StatusOK, "User created successfully")
+	c.JSON(http.StatusOK, "Role created successfully")
 
-	return s.StaffID
+	return s.RoleID
 }
 
-// List all tickets
+// List all roles
 func ListRoles(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -1045,31 +1072,31 @@ func ListRoles(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, title, description, status FROM tickets")
+	rows, err := db.Query("SELECT id, role_name FROM roles")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	var roles []structs.Role
 	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Status); err != nil {
+		var t structs.Role
+		if err := rows.Scan(&t.RoleID, &t.RoleName); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		tickets = append(tickets, t)
+		roles = append(roles, t)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, roles)
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 //////// CATEGORIES ////////
 
-// Get a user ID from database
+// Get a Category from database
 func GetCategory(c *gin.Context, cid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -1090,8 +1117,8 @@ func GetCategory(c *gin.Context, cid int) {
 	c.JSON(http.StatusOK, s)
 }
 
-// Update a update by ID
-func UpdateCategory(c *gin.Context, cid int) {
+// Update a category by ID
+func UpdateCategory(c *gin.Context, cid int, cn string) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1101,12 +1128,13 @@ func UpdateCategory(c *gin.Context, cid int) {
 
 	//session := sessions.Default(c)
 	id := cid
+	categoryName := cn
 	var s structs.Categories
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE category SET category_name = ? WHERE id = ?", s.CategoryName, id)
+	_, err := db.Exec("UPDATE category SET category_name = ? WHERE id = ?", categoryName, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -1114,7 +1142,7 @@ func UpdateCategory(c *gin.Context, cid int) {
 	c.JSON(http.StatusOK, "Category updated successfully")
 }
 
-// Delete a user by ID
+// Delete a category by ID
 func DeleteCategory(c *gin.Context, cid int) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1132,7 +1160,7 @@ func DeleteCategory(c *gin.Context, cid int) {
 	c.JSON(http.StatusOK, "Category deleted successfully")
 }
 
-// Create staff
+// Create category
 func CreateCategories(c *gin.Context, cn string) int {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -1170,7 +1198,7 @@ func CreateCategories(c *gin.Context, cn string) int {
 	return s.CategoryID
 }
 
-// List all tickets
+// List all categories
 func ListCategories(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -1243,7 +1271,7 @@ func UpdateSubCategories(c *gin.Context, scid int, scn string, cid int) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE sub_category SET sub_category_name = ?, category_id = ?, WHERE id = ?", sub_category_name, category_id, id)
+	_, err := db.Exec("UPDATE sub_category SET sub_category_name = ?, category_id = ? WHERE id = ?", sub_category_name, category_id, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
