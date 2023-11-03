@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -112,8 +113,8 @@ func GetTicket(c *gin.Context) {
 }
 
 // Update a ticket by ID
-func UpdateTicket(c *gin.Context) {
-	id := c.Param("id")
+func UpdateTicket(c *gin.Context, tid int, ts string, td int, cat int, scat int, pr string, slaid int, staffid int, agentid int, due time.Time) {
+	id := tid
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -136,8 +137,8 @@ func UpdateTicket(c *gin.Context) {
 }
 
 // Delete a ticket by ID
-func DeleteTicket(c *gin.Context) {
-	id := c.Param("id")
+func DeleteTicket(c *gin.Context, tid int) {
+	id := tid
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
