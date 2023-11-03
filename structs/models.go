@@ -118,3 +118,8 @@ type SubCategories struct {
 	SubCategoryName string `json:"sub_category_name"`
 	CategoryID      int    `json:"category_id"`
 }
+
+type Status struct {
+	StatusID   int    `json:"status_id"`
+	StatusName string `json:"status_name"`
+}

@@ -1389,3 +1389,139 @@ func ListSubCategories(c *gin.Context) {
 
 	c.JSON(http.StatusOK, SubCategories)
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+
+//////// STATUS ////////
+
+// Get a Status from database
+func GetStatus(c *gin.Context, sid int) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return
+	}
+
+	//session := sessions.Default(c)
+	id := sid
+	var s structs.Status
+	err := db.QueryRow("SELECT id, status_name FROM status WHERE id = ?", id).
+		Scan(&s.StatusID, &s.StatusName)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Status not found"})
+		return
+	}
+	c.JSON(http.StatusOK, s)
+}
+
+// Update a category by ID
+func UpdateStatus(c *gin.Context, sid int, sn string) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
+		return
+	}
+
+	//session := sessions.Default(c)
+	id := sid
+	statusName := sn
+	var s structs.Status
+	if err := c.ShouldBindJSON(&s); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	_, err := db.Exec("UPDATE status SET status_name = ? WHERE id = ?", statusName, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, "Status updated successfully")
+}
+
+// Delete a Status by ID
+func DeleteStatus(c *gin.Context, sid int) {
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
+		return
+	}
+
+	//session := sessions.Default(c)
+	id := sid
+	_, err := db.Exec("DELETE FROM status WHERE id = ?", id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, "Status deleted successfully")
+}
+
+// Create Status
+func CreateStatus(c *gin.Context, sn string) int {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
+		return 0
+	}
+
+	//session := sessions.Default(c)
+	//email := session.Get("user-email")
+	//username := session.Get("user-name")
+	//first_name := session.Get("user-firstName")
+	//last_name := session.Get("user-lastName")
+	//sub := session.Get("user-sub")
+
+	status_name := sn
+
+	var s structs.Status
+	if err := c.ShouldBindJSON(&s); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return 0
+	}
+	result, err := db.Exec("INSERT INTO status (status_name) VALUES (?)", status_name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return 0
+	}
+
+	lastInsertID, _ := result.LastInsertId()
+	s.StatusID = int(lastInsertID)
+	c.JSON(http.StatusCreated, s)
+
+	c.JSON(http.StatusOK, "Status created successfully")
+
+	return s.StatusID
+}
+
+// List all categories
+func ListCategories(c *gin.Context) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return
+	}
+
+	rows, err := db.Query("SELECT id, status_name FROM status")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var status []structs.Status
+	for rows.Next() {
+		var t structs.Status
+		if err := rows.Scan(&t.StatusID, &t.StatusName); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		status = append(status, t)
+	}
+
+	c.JSON(http.StatusOK, status)
+}

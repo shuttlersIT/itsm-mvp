@@ -146,7 +146,7 @@ func UpdateTicketOperation(c *gin.Context, tid int, ts string, td int, cat int, 
 		return 0
 	}
 
-	_, err := db.Exec("UPDATE tickets SET subject = ?, description = ?, category_id = ?, sub_category_id = ?, priority_id, sla_id, staff_id, agent_id, due_at, asset_id, related_ticket_id, tag, site, attachment_id WHERE id = ?", t.Subject, t.Description, t.Status, id)
+	_, err := db.Exec("UPDATE tickets SET subject = ?, description = ?, category_id = ?, sub_category_id = ?, priority_id, sla_id, staff_id, agent_id, due_at, asset_id, related_ticket_id, tag, site, status, attachment_id WHERE id = ?", t.Subject, t.Description, t.Status, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
@@ -208,3 +208,4 @@ func DeleteTicket(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, "Ticket deleted successfully")
 }
+
