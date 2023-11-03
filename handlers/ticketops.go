@@ -1070,7 +1070,7 @@ func ListRoles(c *gin.Context) {
 //////// CATEGORIES ////////
 
 // Get a user ID from database
-func GetCategories(c *gin.Context) {
+func GetCategory(c *gin.Context, cid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1078,20 +1078,20 @@ func GetCategories(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	var s structs.Staff
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE id = ?", id).
-		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
+	//session := sessions.Default(c)
+	id := cid
+	var s structs.Categories
+	err := db.QueryRow("SELECT id, category_name FROM category WHERE id = ?", id).
+		Scan(&s.CategoryID, &s.CategoryName)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
 		return
 	}
 	c.JSON(http.StatusOK, s)
 }
 
 // Update a update by ID
-func UpdateCategories(c *gin.Context) {
+func UpdateCategory(c *gin.Context, cid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1099,41 +1099,41 @@ func UpdateCategories(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("id")
-	var s structs.Staff
+	//session := sessions.Default(c)
+	id := cid
+	var s structs.Categories
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", s.FirstName, s.LastName, s.StaffEmail, s.Username, s.PositionID, s.DepartmentID, id)
+	_, err := db.Exec("UPDATE category SET category_name = ? WHERE id = ?", s.CategoryName, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User updated successfully")
+	c.JSON(http.StatusOK, "Category updated successfully")
 }
 
 // Delete a user by ID
-func DeleteCategories(c *gin.Context) {
+func DeleteCategory(c *gin.Context, cid int) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
-	_, err := db.Exec("DELETE FROM staff WHERE id = ?", id)
+	//session := sessions.Default(c)
+	id := cid
+	_, err := db.Exec("DELETE FROM category WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User deleted successfully")
+	c.JSON(http.StatusOK, "Category deleted successfully")
 }
 
 // Create staff
-func CreateCategories(c *gin.Context) int {
+func CreateCategories(c *gin.Context, cn string) int {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1141,31 +1141,33 @@ func CreateCategories(c *gin.Context) int {
 		return 0
 	}
 
-	session := sessions.Default(c)
-	email := session.Get("user-email")
-	username := session.Get("user-name")
-	first_name := session.Get("user-firstName")
-	last_name := session.Get("user-lastName")
+	//session := sessions.Default(c)
+	//email := session.Get("user-email")
+	//username := session.Get("user-name")
+	//first_name := session.Get("user-firstName")
+	//last_name := session.Get("user-lastName")
 	//sub := session.Get("user-sub")
 
-	var s structs.Staff
+	category_name := cn
+
+	var s structs.Categories
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
+	result, err := db.Exec("INSERT INTO category (category_name) VALUES (?)", category_name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	s.StaffID = int(lastInsertID)
+	s.CategoryID = int(lastInsertID)
 	c.JSON(http.StatusCreated, s)
 
-	c.JSON(http.StatusOK, "User created successfully")
+	c.JSON(http.StatusOK, "Category created successfully")
 
-	return s.StaffID
+	return s.CategoryID
 }
 
 // List all tickets
@@ -1177,24 +1179,24 @@ func ListCategories(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, title, description, status FROM tickets")
+	rows, err := db.Query("SELECT id, category_name FROM category")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	var categories []structs.Categories
 	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Status); err != nil {
+		var t structs.Categories
+		if err := rows.Scan(&t.CategoryID, &t.CategoryName); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		tickets = append(tickets, t)
+		categories = append(categories, t)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, categories)
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1202,7 +1204,7 @@ func ListCategories(c *gin.Context) {
 //////// SUB-CATEGORIES ////////
 
 // Get a user ID from database
-func GetSubCategory(c *gin.Context) {
+func GetSubCategory(c *gin.Context, scid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1210,8 +1212,8 @@ func GetSubCategory(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
+	//session := sessions.Default(c)
+	id := scid
 	var s structs.SubCategories
 	err := db.QueryRow("SELECT id, sub_category_name, category_id FROM sub_category WHERE id = ?", id).
 		Scan(&s.SubCategoryID, &s.SubCategoryName, &s.CategoryID)
