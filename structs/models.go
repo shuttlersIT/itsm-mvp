@@ -52,6 +52,7 @@ type Asset struct {
 	SerialNumber  string `json:"serial_number"`
 	PurchaseDate  string `json:"purchase_date"`
 	PurchasePrice string `json:"purchase_price"`
+	Vendor		  string `json:"vendor"`
 	Site          string `json:"site"`
 	Status        string `json:"status"`
 }
