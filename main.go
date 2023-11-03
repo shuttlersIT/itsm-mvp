@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
@@ -16,14 +15,6 @@ import (
 	"github.com/shuttlersIT/itsm-mvp/middleware"
 )
 
-// ApiMiddleware will add the db connection to the context
-func ApiMiddleware(db *sql.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("databaseConn", db)
-		c.Next()
-	}
-}
-
 func main() {
 	router := gin.Default()
 
@@ -32,7 +23,7 @@ func main() {
 	fmt.Println(status)
 	database.TableExists(db, "tickets")
 
-	router.Use(ApiMiddleware(db))
+	router.Use(middleware.ApiMiddleware(db))
 
 	//RedisHost := "127.0.0.1"
 	//RedisPort := "6379"
