@@ -40,14 +40,14 @@ func ListAssets(c *gin.Context) {
 }
 
 // Create a new asset
-func CreateAsset(c *gin.Context, aid int, atype string, aname string, desc string, man string, mod string, snum string, purch handlers.ItTime, price float, ven string, site string, status string) {
+func CreateAsset(c *gin.Context, aid int, atype string, aname string, desc string, man string, mod string, snum string, purch ItTime, price int, ven string, sit string, statu string) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
 		return
 	}
-	assetID := aid      
+	assetID := aid
 	assetType := atype
 	assetName := aname
 	description := desc
@@ -57,8 +57,8 @@ func CreateAsset(c *gin.Context, aid int, atype string, aname string, desc strin
 	purchaseDate := purch
 	purchasePrice := price
 	vendor := ven
-	site := site
-	status := status
+	site := sit
+	status := statu
 
 	var t structs.Asset
 	if err := c.ShouldBindJSON(&t); err != nil {
@@ -98,9 +98,9 @@ func GetAsset(c *gin.Context, aid int) {
 }
 
 // Update a asset by ID
-func UpdateAsset(c *gin.Context, i int, aid int, atype string, aname string, desc string, man string, mod string, snum string, purch handlers.ItTime, price float, ven string, site string, status string) {
+func UpdateAsset(c *gin.Context, i int, aid int, atype string, aname string, desc string, man string, mod string, snum string, purch ItTime, price int, ven string, sit string, statu string) {
 	id := i
-	assetID := aid      
+	assetID := aid
 	assetType := atype
 	assetName := aname
 	description := desc
@@ -110,8 +110,8 @@ func UpdateAsset(c *gin.Context, i int, aid int, atype string, aname string, des
 	purchaseDate := purch
 	purchasePrice := price
 	vendor := ven
-	site := site
-	status := status
+	site := sit
+	status := statu
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -126,7 +126,7 @@ func UpdateAsset(c *gin.Context, i int, aid int, atype string, aname string, des
 		return
 	}
 
-	_, err := db.Exec("UPDATE assets SET asset_id = ?, asset_type = ?, asset_name = ?, description = ?, manufacturer = ?, model = ?, serial_number = ?, purchase_date = ?, purchase_price = ?, vendor = ?, site = ?, status = ? WHERE id = ?", t.AssetID, t.AssetType, t.AssetName, t.Description, t.Manufacturer, t.Model, t.SerialNumber, t.PurchaseDate, t.PurchasePrice, t.Vendor, t.Site, t.Status, id)
+	_, err := db.Exec("UPDATE assets SET asset_id = ?, asset_type = ?, asset_name = ?, description = ?, manufacturer = ?, model = ?, serial_number = ?, purchase_date = ?, purchase_price = ?, vendor = ?, site = ?, status = ? WHERE id = ?", assetID, assetType, assetName, description, manufacturer, model, serialNumber, purchaseDate, purchasePrice, vendor, site, status, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

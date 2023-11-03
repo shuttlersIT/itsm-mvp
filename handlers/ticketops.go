@@ -1252,11 +1252,11 @@ func ListCategories(c *gin.Context) {
 	c.JSON(http.StatusOK, categories)
 }
 
-//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/*-------------------------------------------------------------------------------------------------*/
+//////// SUB-CATEGORIES /////////////////////////////////////////////////////////////////////////////
 
-//////// SUB-CATEGORIES ////////
-
-// Get a user ID from database
+// Get a Subcategory from database
 func GetSubCategory(c *gin.Context, scid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -1277,7 +1277,7 @@ func GetSubCategory(c *gin.Context, scid int) {
 	c.JSON(http.StatusOK, s)
 }
 
-// Update a update by ID
+// Update a Subcategory by ID
 func UpdateSubCategories(c *gin.Context, scid int, scn string, cid int) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -1304,7 +1304,7 @@ func UpdateSubCategories(c *gin.Context, scid int, scn string, cid int) {
 	c.JSON(http.StatusOK, "Sub_Category updated successfully")
 }
 
-// Delete a user by ID
+// Delete a Subcategory by ID
 func DeleteSubCategories(c *gin.Context, scid int) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1322,7 +1322,7 @@ func DeleteSubCategories(c *gin.Context, scid int) {
 	c.JSON(http.StatusOK, "Sub-Category deleted successfully")
 }
 
-// Create staff
+// Create Subcategory
 func CreateSubCategories(c *gin.Context, scn string, cid int) int {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -1337,7 +1337,6 @@ func CreateSubCategories(c *gin.Context, scn string, cid int) int {
 	//first_name := session.Get("user-firstName")
 	//last_name := session.Get("user-lastName")
 	//sub := session.Get("user-sub")
-
 	sub_category_name := scn
 	category_id := cid
 
