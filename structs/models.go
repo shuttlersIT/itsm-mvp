@@ -74,6 +74,7 @@ type Priority struct {
 type Satisfaction struct {
 	SatisfactionID int    `json:"satisfaction_id"`
 	Name           string `json:"satisfaction_name"`
+	Rank           int    `json:"rank"`
 	Emoji          string `json:"emoji"`
 }
 

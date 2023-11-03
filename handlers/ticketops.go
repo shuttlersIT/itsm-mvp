@@ -376,7 +376,7 @@ func CreateSatisfaction(c *gin.Context) int {
 	return s.StaffID
 }
 
-// List all tickets
+// List all Satisfaction
 func ListSatisfaction(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -385,24 +385,24 @@ func ListSatisfaction(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, title, description, status FROM tickets")
+	rows, err := db.Query("SELECT id, satisfaction_name, rank, emoji FROM satisfaction")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	var satisfactions []structs.Satisfaction
 	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Status); err != nil {
+		var t structs.Satisfaction
+		if err := rows.Scan(&t.SatisfactionID, &t.Name, &t.Emoji); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		tickets = append(tickets, t)
+		satisfactions = append(satisfactions, t)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, satisfactions)
 }
 
 //////////////////////////////////////////////////////////////////////////
