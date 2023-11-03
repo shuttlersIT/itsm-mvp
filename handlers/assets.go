@@ -19,34 +19,46 @@ func ListAssets(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, title, description, status FROM tickets")
+	rows, err := db.Query("SELECT id, asset_id, asset_type, asset_name, description, manufacturer, model, serial_number, purchase_date, purchase_price, vendor, site, status, description, status FROM assets")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	var assets []structs.Asset
 	for rows.Next() {
-		var t structs.Ticket
+		var t structs.Asset
 		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Status); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		tickets = append(tickets, t)
+		tickets = append(assets, t)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, assets)
 }
 
 // Create a new ticket
-func CreateAsset(c *gin.Context) {
+func CreateAsset(c *gin.Context, aid int, atype string, aname string, desc string, man string, mod string, snum string, purch handlers.ItTime, price float, ven string, site string, status string) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
 		return
 	}
+	assetID := aid      
+	assetType := atype
+	assetName := aname
+	description := desc
+	manufacturer := man
+	model := mod
+	serialNumber := snum
+	purchaseDate := purch
+	purchasePrice := price
+	vendor := ven
+	site := site
+	status := status
 
 	var t structs.Ticket
 	if err := c.ShouldBindJSON(&t); err != nil {
@@ -86,8 +98,20 @@ func GetAsset(c *gin.Context) {
 }
 
 // Update a ticket by ID
-func UpdateAsset(c *gin.Context) {
-	id := c.Param("id")
+func UpdateAsset(c *gin.Context, i int, aid int, atype string, aname string, desc string, man string, mod string, snum string, purch handlers.ItTime, price float, ven string, site string, status string) {
+	id := i
+	assetID := aid      
+	assetType := atype
+	assetName := aname
+	description := desc
+	manufacturer := man
+	model := mod
+	serialNumber := snum
+	purchaseDate := purch
+	purchasePrice := price
+	vendor := ven
+	site := site
+	status := status
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -95,6 +119,7 @@ func UpdateAsset(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
 		return
 	}
+
 	var t structs.Ticket
 	if err := c.ShouldBindJSON(&t); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
