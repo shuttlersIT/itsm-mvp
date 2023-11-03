@@ -38,8 +38,8 @@ type Ticket struct {
 	RelatedTicketID int    `json:"related_ticket_id"`
 	Tag             string `json:"tag"`
 	Site            string `json:"site"`
-	AttachmentID    int    `json:"attachment"`
 	Status          string `json:"status"`
+	AttachmentID    int    `json:"attachment"`
 }
 
 type Asset struct {

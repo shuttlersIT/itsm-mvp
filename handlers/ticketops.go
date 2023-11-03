@@ -1390,8 +1390,7 @@ func ListSubCategories(c *gin.Context) {
 	c.JSON(http.StatusOK, SubCategories)
 }
 
-
-//////////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////////////*/
 
 //////// STATUS ////////
 
@@ -1498,7 +1497,7 @@ func CreateStatus(c *gin.Context, sn string) int {
 }
 
 // List all categories
-func ListCategories(c *gin.Context) {
+func ListStatus(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
