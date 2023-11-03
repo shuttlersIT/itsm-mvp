@@ -82,11 +82,11 @@ CREATE TABLE sla (
 	priority_id     INT,
 	satisfaction_id INT,
 	policy_id      INT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (priority_id) REFERENCES priority(id),
     FOREIGN KEY (satisfaction_id) REFERENCES satisfaction(id),
-    FOREIGN KEY (policy_id) REFERENCES policy(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    FOREIGN KEY (policy_id) REFERENCES policy(id)
 );
 
 CREATE TABLE priority (
