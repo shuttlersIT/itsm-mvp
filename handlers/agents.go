@@ -12,7 +12,7 @@ import (
 )
 
 // Get an agent id from database
-func GetAgent(c *gin.Context) {
+func GetAgentHandler(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -33,7 +33,7 @@ func GetAgent(c *gin.Context) {
 }
 
 // Update an agent by ID
-func UpdateAgent(c *gin.Context) {
+func UpdateAgentHandlers(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -57,7 +57,7 @@ func UpdateAgent(c *gin.Context) {
 }
 
 // Delete an agent by ID
-func DeleteAgent(c *gin.Context) {
+func DeleteAgentHandlers(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -73,4 +73,33 @@ func DeleteAgent(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, "Agent deleted successfully")
+}
+
+// List all Agents
+func ListAgentsHandler(c *gin.Context) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return
+	}
+
+	rows, err := db.Query("SELECT id, first_name, last_name, agent_email, username, role_id, unit, supervisor_id FROM agents")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var agents []structs.Agent
+	for rows.Next() {
+		var a structs.Agent
+		if err := rows.Scan(&a.AgentID, &a.FirstName, &a.LastName, &a.AgentEmail, &a.Username, &a.RoleID, &a.Unit, &a.SupervisorID); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		agents = append(agents, a)
+	}
+
+	c.JSON(http.StatusOK, agents)
 }

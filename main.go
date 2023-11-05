@@ -66,6 +66,7 @@ func main() {
 	router.GET("/login", handlers.LoginHandler)
 	router.GET("/auth", handlers.AuthHandler)
 	router.GET("/logout", handlers.LogoutHandler)
+	router.GET("/login/admin", handlers.GetAgentHandler)
 
 	//Index ROute Router Group
 	authorized := router.Group("/")
@@ -75,6 +76,8 @@ func main() {
 		authorized.GET("/testing", homeTest)
 	}
 	//router.Use(static.Serve("/", static.LocalFile("./templates", true)))
+	var id int
+	ticketRoute := fmt.Sprintf("/ticketing/0/admin/work/%d", id)
 
 	//ITSM Portal Router Group
 	itsm := router.Group("/itsm/ticketing")
@@ -84,6 +87,8 @@ func main() {
 		authorized.GET("/itsm/ticketing/0/admin", handlers.ItDeskAdminHandler)
 		authorized.GET("/itsm/ticketing", handlers.ItDeskHandler)
 		authorized.GET("/testing", homeTest)
+		authorized.GET(ticketRoute, handlers.GetTicket)
+		//authorized.GET("/ticketing/0/admin/work/:id", handlers.GetTicket)
 		authorized.GET("/ticketing/0/admin/work", handlers.ListTickets)
 		authorized.POST("/ticketing/0/admin/work", handlers.CreateTicket)
 		authorized.PUT("/ticketing/0/admin/work/:id", handlers.UpdateTicket)

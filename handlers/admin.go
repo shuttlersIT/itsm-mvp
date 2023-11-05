@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"crypto/rand"
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -14,34 +12,12 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/shuttlersIT/itsm-mvp/database"
 	"github.com/shuttlersIT/itsm-mvp/structs"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
 
-//type ticket structs.Ticket
-
-// var c string
-var conf *oauth2.Config
-
-// RandToken generates a random @l length token.
-func RandToken(l int) (string, error) {
-	b := make([]byte, l)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(b), nil
-}
-
-// Share databases
-func ShareDb(d *sql.DB, c *gin.Context) *sql.DB {
-	db := d
-	database.TableExists(db, "tickets")
-	return d
-}
-
-func getID(e string, c *gin.Context) (int, string) {
+func getAgentID(e string, c *gin.Context) (int, string) {
 	var id int
 	email := e
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -50,18 +26,14 @@ func getID(e string, c *gin.Context) (int, string) {
 		return 0, ""
 	}
 
-	err := db.QueryRow("SELECT id FROM staff WHERE email = ?", email).
+	err := db.QueryRow("SELECT id FROM agent WHERE email = ?", email).
 		Scan(&id)
 	if err != nil {
 		id = CreateUser(c)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff email not found in our records"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent email not found in our records"})
 		return id, email
 	}
 	return id, email
-}
-
-func getLoginURL(state string) string {
-	return conf.AuthCodeURL(state)
 }
 
 func init() {
@@ -80,18 +52,18 @@ func init() {
 }
 
 // IndexHandler handles the login
-func IndexHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", gin.H{})
+func AdminIndexHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "admin/index.html", gin.H{})
 }
 
 // AuthHandler handles authentication of a user and initiates a session.
-func AuthHandler(c *gin.Context) {
+func AdminAuthHandler(c *gin.Context) {
 	//Declare shuttlers domain
 	//shuttlersDomain := "shuttlers.ng"
 
 	// Handle the exchange code to initiate a transport.
-	session := sessions.Default(c)
-	retrievedState := session.Get("state")
+	adminSession := sessions.Default(c)
+	retrievedState := adminSession.Get("state")
 	queryState := c.Request.URL.Query().Get("state")
 	if retrievedState != queryState {
 		log.Printf("Invalid session state: retrieved: %s; Param: %s", retrievedState, queryState)
@@ -123,13 +95,13 @@ func AuthHandler(c *gin.Context) {
 	}
 
 	// Get user ID
-	session.Set("user-email", u.Email)
-	session.Set("user-name", u.Name)
-	session.Set("user-firstName", u.GivenName)
-	session.Set("user-lastName", u.FamilyName)
-	session.Set("user-sub", u.Sub)
+	adminSession.Set("user-email", u.Email)
+	adminSession.Set("user-name", u.Name)
+	adminSession.Set("user-firstName", u.GivenName)
+	adminSession.Set("user-lastName", u.FamilyName)
+	adminSession.Set("user-sub", u.Sub)
 
-	err = session.Save()
+	err = adminSession.Save()
 	if err != nil {
 		log.Println(err)
 		c.HTML(http.StatusBadRequest, "error.html", gin.H{"message": "Error while saving session. Please try again."})
@@ -137,14 +109,14 @@ func AuthHandler(c *gin.Context) {
 	}
 
 	//
-	userId, _ := getID(u.Email, c)
-	session.Set("id", userId)
-	session.Set("user-email", u.Email)
-	session.Set("user-name", u.Name)
-	session.Set("user-firstName", u.GivenName)
-	session.Set("user-lastName", u.FamilyName)
-	session.Set("user-sub", u.Sub)
-	err = session.Save()
+	userId, _ := getAgentID(u.Email, c)
+	adminSession.Set("id", userId)
+	adminSession.Set("user-email", u.Email)
+	adminSession.Set("user-name", u.Name)
+	adminSession.Set("user-firstName", u.GivenName)
+	adminSession.Set("user-lastName", u.FamilyName)
+	adminSession.Set("user-sub", u.Sub)
+	err = adminSession.Save()
 	if err != nil {
 		log.Println(err)
 		c.HTML(http.StatusBadRequest, "error.html", gin.H{"message": "Error while saving session. Please try again."})
@@ -152,9 +124,9 @@ func AuthHandler(c *gin.Context) {
 	}
 	//seen := false
 
-	userEmail := session.Get("user-Email")
+	userEmail := adminSession.Get("user-Email")
 	fmt.Println(userEmail)
-	fmt.Println(session)
+	fmt.Println(adminSession)
 	//uName := session.Get("user-name")
 
 	c.HTML(http.StatusOK, "itsm.html", gin.H{"Username": userEmail})
@@ -163,15 +135,15 @@ func AuthHandler(c *gin.Context) {
 }
 
 // LoginHandler handles the login procedure.
-func LoginHandler(c *gin.Context) {
+func AgentLoginHandler(c *gin.Context) {
 	state, err := RandToken(32)
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", gin.H{"message": "Error while generating random data."})
 		return
 	}
-	session := sessions.Default(c)
-	session.Set("state", state)
-	err = session.Save()
+	adminSession := sessions.Default(c)
+	adminSession.Set("state", state)
+	err = adminSession.Save()
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", gin.H{"message": "Error while saving session."})
 		return
@@ -181,60 +153,78 @@ func LoginHandler(c *gin.Context) {
 }
 
 // Logout Handler
-func LogoutHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	session.Clear()
-	session.Save()
+func AgentLogoutHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	adminSession.Clear()
+	adminSession.Save()
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User Signed out successfully",
 	})
 }
 
 // RequestHandler is a rudementary handler for logged in users.
-func RequestHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	userEmail := session.Get("user-email")
+func AgentRequestHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
 	c.HTML(http.StatusOK, "datarequest.html", gin.H{"Username": userEmail})
 }
 
 // ITSM Home
-func ItsmHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	userEmail := session.Get("user-email")
+func AgentItsmHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
 	c.HTML(http.StatusOK, "itsm.html", gin.H{"Username": userEmail})
 }
 
 // ITSM Desk
-func ItDeskPortalHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	userEmail := session.Get("user-email")
+func AgentItDeskPortalHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
 	c.HTML(http.StatusOK, "itdesk.html", gin.H{"Username": userEmail})
 }
-func ItDeskAdminHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	userEmail := session.Get("user-email")
+func AgentItDeskAdminHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
 	c.HTML(http.StatusOK, "itdeskadmin.html", gin.H{"Username": userEmail})
 }
-func ItDeskHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	userEmail := session.Get("user-email")
+func AgentItDeskHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
 	c.HTML(http.StatusOK, "itdesk.html", gin.H{"Username": userEmail})
 }
 
 // Assets
-func AssetsPortalHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	userEmail := session.Get("user-email")
+func AgentAssetsPortalHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
 	c.HTML(http.StatusOK, "assetsportal.html", gin.H{"Username": userEmail})
 }
 
-func AssetsAdminHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	userEmail := session.Get("user-email")
+func AgentAssetsAdminHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
 	c.HTML(http.StatusOK, "assetsadmin.html", gin.H{"Username": userEmail})
 }
-func AssetsHandler(c *gin.Context) {
+func AgentAssetsHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userEmail := session.Get("user-email")
 	c.HTML(http.StatusOK, "assetsx.html", gin.H{"Username": userEmail})
+}
+
+// Procurement
+func ProcurementPortalHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
+	c.HTML(http.StatusOK, "procurementportal.html", gin.H{"Username": userEmail})
+}
+
+func ProcurementAdminHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
+	c.HTML(http.StatusOK, "procurementadmin.html", gin.H{"Username": userEmail})
+}
+func ProcurementHandler(c *gin.Context) {
+	adminSession := sessions.Default(c)
+	userEmail := adminSession.Get("user-email")
+	c.HTML(http.StatusOK, "procurementx.html", gin.H{"Username": userEmail})
 }
