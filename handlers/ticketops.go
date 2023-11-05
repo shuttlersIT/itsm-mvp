@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
@@ -490,14 +489,14 @@ func DeletePolicy(c *gin.Context, poid int) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
+	//adminSession := sessions.Default(c)
+	id := poid
 	_, err := db.Exec("DELETE FROM policy WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, "User deleted successfully")
+	c.JSON(http.StatusOK, "Policy deleted successfully")
 }
 
 // Create policy

@@ -20,8 +20,8 @@ func GetAgentHandler(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	email := session.Get("user-email")
+	adminSession := sessions.Default(c)
+	email := adminSession.Get("user-email")
 	var a structs.Agent
 	err := db.QueryRow("SELECT id, first_name, last_name, agent_email, username, role_id, unit, supervisor_id FROM agents WHERE email = ?", email).
 		Scan(&a.AgentID, &a.FirstName, &a.LastName, &a.AgentEmail, &a.Username, &a.RoleID, &a.Unit, &a.SupervisorID)
@@ -41,8 +41,8 @@ func UpdateAgentHandlers(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
+	adminSession := sessions.Default(c)
+	id := adminSession.Get("user-id")
 	var t structs.Agent
 	if err := c.ShouldBindJSON(&t); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -65,8 +65,8 @@ func DeleteAgentHandlers(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	id := session.Get("user-id")
+	adminSession := sessions.Default(c)
+	id := adminSession.Get("user-id")
 	_, err := db.Exec("DELETE FROM agents WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
