@@ -198,43 +198,40 @@ func RequestHandler(c *gin.Context) {
 }
 
 // ITSM Home
+func ItsmPortalHandler(c *gin.Context) {
+	session := sessions.Default(c)
+	userEmail := session.Get("user-email")
+	c.HTML(http.StatusOK, "index.html", gin.H{"Username": userEmail})
+}
+
 func ItsmHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userEmail := session.Get("user-email")
-	c.HTML(http.StatusOK, "itsm.html", gin.H{"Username": userEmail})
+	c.HTML(http.StatusOK, "asset/assetsx.html", gin.H{"Username": userEmail})
 }
 
 // ITSM Desk
 func ItDeskPortalHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userEmail := session.Get("user-email")
-	c.HTML(http.StatusOK, "itdesk.html", gin.H{"Username": userEmail})
+	c.HTML(http.StatusOK, "itdesk/itdesk.html", gin.H{"Username": userEmail})
 }
-func ItDeskAdminHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	userEmail := session.Get("user-email")
-	c.HTML(http.StatusOK, "itdeskadmin.html", gin.H{"Username": userEmail})
-}
+
 func ItDeskHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userEmail := session.Get("user-email")
-	c.HTML(http.StatusOK, "itdesk.html", gin.H{"Username": userEmail})
+	c.HTML(http.StatusOK, "itdesk/itdesk.html", gin.H{"Username": userEmail})
 }
 
 // Assets
 func AssetsPortalHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userEmail := session.Get("user-email")
-	c.HTML(http.StatusOK, "assetsportal.html", gin.H{"Username": userEmail})
+	c.HTML(http.StatusOK, "asset/assetsportal.html", gin.H{"Username": userEmail})
 }
 
-func AssetsAdminHandler(c *gin.Context) {
-	session := sessions.Default(c)
-	userEmail := session.Get("user-email")
-	c.HTML(http.StatusOK, "assetsadmin.html", gin.H{"Username": userEmail})
-}
 func AssetsHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userEmail := session.Get("user-email")
-	c.HTML(http.StatusOK, "assetsx.html", gin.H{"Username": userEmail})
+	c.HTML(http.StatusOK, "asset/assetsx.html", gin.H{"Username": userEmail})
 }

@@ -68,7 +68,7 @@ func main() {
 	router.GET("/logout", handlers.LogoutHandler)
 	router.GET("/login/admin", handlers.GetAgentHandler)
 
-	//Index ROute Router Group
+	//Index Route Router Group
 	authorized := router.Group("/")
 	authorized.Use(middleware.AuthorizeRequest())
 	{
