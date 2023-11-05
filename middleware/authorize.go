@@ -21,3 +21,14 @@ func AuthorizeRequest() gin.HandlerFunc {
 	}
 }
 
+func AuthorizeAdminRequest() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		adminSession := sessions.Default(c)
+		v := adminSession.Get("user-id")
+		if v == nil {
+			c.HTML(http.StatusUnauthorized, "admin/login.html", gin.H{"message": "Please login."})
+			c.Abort()
+		}
+		c.Next()
+	}
+}
