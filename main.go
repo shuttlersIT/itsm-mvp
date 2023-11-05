@@ -73,18 +73,20 @@ func main() {
 	authorized.Use(middleware.AuthorizeRequest())
 	{
 		authorized.GET("/itsm", handlers.ItsmHandler)
+		authorized.GET("/assets", handlers.ItsmHandler)
+		authorized.GET("/procurement", handlers.ItsmHandler)
 		authorized.GET("/testing", homeTest)
 	}
 	//router.Use(static.Serve("/", static.LocalFile("./templates", true)))
 	var id int
 	ticketRoute := fmt.Sprintf("/ticketing/0/admin/work/%d", id)
 
-	//ITSM Portal Router Group
-	itsm := router.Group("/itsm/ticketing")
-	itsm.Use(middleware.AuthorizeRequest())
+	//ADMIN Router Group
+	admin := router.Group("/admin")
+	admin.Use(middleware.AuthorizeRequest())
 	{
 		authorized.GET("/itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
-		authorized.GET("/itsm/ticketing/0/admin", handlers.ItDeskAdminHandler)
+		authorized.GET("admin/itsm/ticketing", handlers.ItDeskAdminHandler)
 		authorized.GET("/itsm/ticketing", handlers.ItDeskHandler)
 		authorized.GET("/testing", homeTest)
 		authorized.GET(ticketRoute, handlers.GetTicket)
@@ -96,24 +98,41 @@ func main() {
 
 	}
 
+	//ITSM Portal Router Group
+	itsm := router.Group("/itsm")
+	itsm.Use(middleware.AuthorizeRequest())
+	{
+		authorized.GET("itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
+		authorized.GET("itsm/ticketing/0/admin", handlers.ItDeskAdminHandler)
+		authorized.GET("itsm/ticketing", handlers.ItDeskHandler)
+		authorized.GET("itsm//testing", homeTest)
+		authorized.GET(ticketRoute, handlers.GetTicket)
+		//authorized.GET("itsm/ticketing/0/admin/work/:id", handlers.GetTicket)
+		authorized.GET("itsm/ticketing/0/admin/work", handlers.ListTickets)
+		authorized.POST("itsm/ticketing/0/admin/work", handlers.CreateTicket)
+		authorized.PUT("itsm/ticketing/0/admin/work/:id", handlers.UpdateTicket)
+		authorized.DELETE("itsm/ticketing/0/admin/work/:id", handlers.DeleteTicket)
+
+	}
+
 	//Assets Portal Router Group
-	assets := router.Group("/itsm/assets")
+	assets := router.Group("/assets")
 	assets.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/itsm/assets/portal", handlers.AssetsPortalHandler)
-		authorized.GET("/itsm/assets/1/admin", handlers.AssetsAdminHandler)
-		authorized.GET("/itsm/assets", handlers.AssetsHandler)
-		authorized.GET("/testing", homeTest)
+		authorized.GET("assets/portal", handlers.AssetsPortalHandler)
+		authorized.GET("assets/1/admin", handlers.AssetsAdminHandler)
+		authorized.GET("assets", handlers.AssetsHandler)
+		authorized.GET("assets/testing", homeTest)
 	}
 
 	//Procurement Dashboard Portal Router Group
-	procurement := router.Group("/itsm/procurement")
+	procurement := router.Group("/procurement")
 	procurement.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/itsm/procurement/portal", handlers.ProcurementPortalHandler)
-		authorized.GET("/itsm/procurement/2/admin", handlers.ProcurementAdminHandler)
-		authorized.GET("/itsm/procurement", handlers.ProcurementHandler)
-		authorized.GET("/testing", homeTest)
+		authorized.GET("procurement/portal", handlers.ProcurementPortalHandler)
+		authorized.GET("procurement/2/admin", handlers.ProcurementAdminHandler)
+		authorized.GET("procurement", handlers.ProcurementHandler)
+		authorized.GET("procurement/testing", homeTest)
 	}
 
 	if err := router.Run(":5152"); err != nil {
