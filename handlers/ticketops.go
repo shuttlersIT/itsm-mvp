@@ -593,6 +593,28 @@ func GetPosition(c *gin.Context, pid int) {
 	c.JSON(http.StatusOK, s)
 }
 
+// Get position by name from database
+func getPositionByName(c *gin.Context, p string) int {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return 0
+	}
+
+	//session := sessions.Default(c)
+	position := p
+	var s structs.Position
+	err := db.QueryRow("SELECT id, position_name, cadre_name FROM positions WHERE position_name = ?", position).
+		Scan(&s.PositionID, &s.PositionName, &s.CadreName)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Position not found"})
+		return 0
+	}
+	//c.JSON(http.StatusOK, s)
+	return s.PositionID
+}
+
 // Update a position by ID
 func UpdatePosition(c *gin.Context, pid int, pn string, cn string) {
 	// Don't forget type assertion when getting the connection from context.
@@ -728,6 +750,28 @@ func GetDepartment(c *gin.Context, did int) {
 		return
 	}
 	c.JSON(http.StatusOK, s)
+}
+
+// Get position by name from database
+func getDepartmentByName(c *gin.Context, d string) int {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return 0
+	}
+
+	//session := sessions.Default(c)
+	department := d
+	var s structs.Department
+	err := db.QueryRow("SELECT id, department_name, emoji FROM departments WHERE department_name = ?", department).
+		Scan(&s.DepartmentID, &s.DepartmentName, &s.Emoji)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Department not found"})
+		return 0
+	}
+	//c.JSON(http.StatusOK, s)
+	return s.DepartmentID
 }
 
 // Update a department by ID

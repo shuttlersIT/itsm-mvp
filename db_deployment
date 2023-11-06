@@ -5,20 +5,21 @@ CREATE TABLE staff (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	first_name    VARCHAR(100) NOT NULL,
 	last_name     VARCHAR(100) NOT NULL,
-	staff_email   VARCHAR(100) NOT NULL,
-	username     VARCHAR(50) NOT NULL,
+	staff_email   VARCHAR(100) NOT NULL UNIQUE,
+	username_id     INT UNIQUE,
 	position_id   INT,
 	department_id INT,
     FOREIGN KEY (position_id) REFERENCES positions(id),
     FOREIGN KEY (department_id) REFERENCES departments(id)
+	FOREIGN KEY (username_id) REFERENCES staff_credentials(id)
 );
 
 CREATE TABLE agents (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	first_name  VARCHAR(100) NOT NULL,
 	last_name   VARCHAR(100) NOT NULL,
-	agent_email VARCHAR(100) NOT NULL,
-	username    VARCHAR(50) NOT NULL,
+	agent_email VARCHAR(100) NOT NULL UNIQUE,
+	username_id    INT UNIQUE,
 	role_id     INT,
 	unit_id     INT,
 	supervisor_id INT,
@@ -26,7 +27,8 @@ CREATE TABLE agents (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (role_id) REFERENCES roles(id),
     FOREIGN KEY (unit_id) REFERENCES units(id),
-    FOREIGN KEY (supervisor_id) REFERENCES staff(id)
+    FOREIGN KEY (supervisor_id) REFERENCES agents(id)
+	FOREIGN KEY (username_id) REFERENCES agent_credentials(id)
 );
 
 CREATE TABLE tickets (
@@ -67,7 +69,7 @@ CREATE TABLE assets (
 	description   TEXT,
 	manufacturer  VARCHAR(100) NOT NULL,
 	model         VARCHAR(100) NOT NULL,
-	serial_number VARCHAR(100) NOT NULL,
+	serial_number VARCHAR(100) NOT NULL UNIQUE,
 	purchase_date DATE,
 	purchase_price INT,
 	vendor VARCHAR(100),
@@ -79,7 +81,7 @@ CREATE TABLE assets (
 
 CREATE TABLE sla (
 	id          INT AUTO_INCREMENT PRIMARY KEY,
-	sla_name        VARCHAR(100) NOT NULL,
+	sla_name        VARCHAR(100) NOT NULL UNIQUE,
 	priority_id     INT,
 	satisfaction_id INT,
 	policy_id      INT,
@@ -92,7 +94,7 @@ CREATE TABLE sla (
 
 CREATE TABLE priority (
 	id    INT AUTO_INCREMENT PRIMARY KEY,
-	priority_name  VARCHAR(100) NOT NULL,
+	priority_name  VARCHAR(100) NOT NULL UNIQUE,
 	first_response INT,
 	colour   VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -101,7 +103,7 @@ CREATE TABLE priority (
 
 CREATE TABLE satisfaction (
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	satisfaction_name VARCHAR(100) NOT NULL,
+	satisfaction_name VARCHAR(100) NOT NULL UNIQUE,
 	rank INT NOT NULL,
 	emoji VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -110,7 +112,7 @@ CREATE TABLE satisfaction (
 
 CREATE TABLE policy (
 	id     INT AUTO_INCREMENT PRIMARY KEY,
-	policy_name   VARCHAR(100) NOT NULL,
+	policy_name   VARCHAR(100) NOT NULL UNIQUE,
 	embedded_link VARCHAR(255) NOT NULL,
 	policy_url  VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -119,7 +121,7 @@ CREATE TABLE policy (
 
 CREATE TABLE positions (
 	id   INT AUTO_INCREMENT PRIMARY KEY,
-	position_name VARCHAR(150) NOT NULL,
+	position_name VARCHAR(150) NOT NULL UNIQUE,
 	cadre_name    VARCHAR(150) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -127,7 +129,7 @@ CREATE TABLE positions (
 
 CREATE TABLE departments (
 	id   INT AUTO_INCREMENT PRIMARY KEY,
-	department_name VARCHAR(100) NOT NULL,
+	department_name VARCHAR(100) NOT NULL UNIQUE,
 	emoji   VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -135,7 +137,7 @@ CREATE TABLE departments (
 
 CREATE TABLE units (
 	id   INT AUTO_INCREMENT PRIMARY KEY,
-	unit_name VARCHAR(100) NOT NULL,
+	unit_name VARCHAR(100) NOT NULL UNIQUE,
 	emoji   VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -150,7 +152,7 @@ CREATE TABLE roles (
 
 CREATE TABLE category (
 	id   INT AUTO_INCREMENT PRIMARY KEY,
-	category_name VARCHAR(100) NOT NULL,
+	category_name VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -173,3 +175,20 @@ CREATE TABLE attachments (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+CREATE TABLE staff_credentials (
+	id   INT AUTO_INCREMENT PRIMARY KEY,
+	username VARCHAR(100) NOT NULL UNIQUE,
+	password VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	FOREIGN KEY (staff_id) REFERENCES staff(id)
+);
+
+CREATE TABLE agent_credentials (
+	id   INT AUTO_INCREMENT PRIMARY KEY,
+	username VARCHAR(100) NOT NULL UNIQUE,
+	password VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (agent_id) REFERENCES agents(id)
+);

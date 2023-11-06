@@ -5,7 +5,7 @@ type Staff struct {
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
 	StaffEmail   string `json:"staff_email"`
-	Username     string `json:"username"`
+	Username     int    `json:"username"`
 	PositionID   int    `json:"position_id"`
 	DepartmentID int    `json:"department_id"`
 }
@@ -15,7 +15,7 @@ type Agent struct {
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
 	AgentEmail   string `json:"agent_email"`
-	Username     string `json:"username"`
+	Username     int    `json:"username"`
 	RoleID       string `json:"role_id"`
 	Unit         string `json:"unit"`
 	SupervisorID int    `json:"supervisor_id"`
@@ -43,7 +43,7 @@ type Ticket struct {
 }
 
 type Asset struct {
-	ID			  int    `json:"id"`
+	ID            int    `json:"id"`
 	AssetID       string `json:"asset_id"`
 	AssetType     string `json:"asset_type"`
 	AssetName     string `json:"asset_name"`
@@ -53,7 +53,7 @@ type Asset struct {
 	SerialNumber  string `json:"serial_number"`
 	PurchaseDate  string `json:"purchase_date"`
 	PurchasePrice string `json:"purchase_price"`
-	Vendor		  string `json:"vendor"`
+	Vendor        string `json:"vendor"`
 	Site          string `json:"site"`
 	Status        string `json:"status"`
 }
@@ -124,4 +124,17 @@ type SubCategories struct {
 type Status struct {
 	StatusID   int    `json:"status_id"`
 	StatusName string `json:"status_name"`
+}
+
+type StaffLoginCredentials struct {
+	CredentialID int    `json:"credentials_id"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+}
+
+type AgentLoginCredentials struct {
+	CredentialID int    `json:"credentials_id"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	AgentID      int    `json:"staff_id"`
 }

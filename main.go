@@ -47,7 +47,7 @@ func main() {
 		Secure:   true,
 		HttpOnly: true,
 	})
-	router.Use(sessions.Sessions("portalsession", store))
+	router.Use(sessions.Sessions("itsmsession", store))
 
 	// We check for errors.
 
@@ -67,6 +67,10 @@ func main() {
 	router.GET("/auth", handlers.AuthHandler)
 	router.GET("/logout", handlers.LogoutHandler)
 	router.GET("/login/admin", handlers.GetAgentHandler)
+
+	//Login Form Handlers
+	router.POST("/register", handlers.Register)
+	router.POST("/formlogin", handlers.PasswordLogin)
 
 	//Index Route Router Group
 	authorized := router.Group("/")

@@ -29,7 +29,9 @@ func GetAgentHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
 		return
 	}
-	c.JSON(http.StatusOK, a)
+	adminSession.Set("id", a.AgentID)
+	agent := a
+	c.JSON(http.StatusOK, agent)
 }
 
 // Update an agent by ID
