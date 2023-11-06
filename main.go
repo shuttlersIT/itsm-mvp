@@ -75,6 +75,7 @@ func main() {
 		authorized.GET("/itsm", handlers.ItsmHandler)
 		authorized.GET("/assets", handlers.ItsmHandler)
 		authorized.GET("/procurement", handlers.ItsmHandler)
+		authorized.GET("/admin", handlers.ItsmHandler)
 		authorized.GET("/testing", homeTest)
 	}
 
@@ -86,19 +87,16 @@ func main() {
 	admin := router.Group("/admin")
 	admin.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/admin/ticketing/itportal", handlers.ItDeskPortalHandler)
-		authorized.GET("/admin/itsm/ticketing", handlers.ItDeskAdminHandler)
-		authorized.GET("/admin/ticketing", handlers.ItDeskHandler)
 		authorized.GET("/admin/testing", homeTest)
+		authorized.GET("/admin/itsm/ticketing", handlers.ItDeskAdminHandler)
+		authorized.GET("/admin/assets", handlers.AssetsAdminHandler)
+		authorized.GET("/admin/procurement", handlers.ProcurementAdminHandler)
 		authorized.GET(ticketRoutet, handlers.GetTicket)
 		//authorized.GET("/ticketing/0/admin/work/:id", handlers.GetTicket)
 		//authorized.GET("/admin/ticketing/work", handlers.ListTickets)
 		//authorized.POST("/admin/ticketing/work", handlers.CreateTicket)
 		//authorized.PUT("/admin/ticketing/work/:id", handlers.UpdateTicket)
 		//authorized.DELETE("/admin/ticketing/work/:id", handlers.DeleteTicket)
-		authorized.GET("/itsm/ticketing/admin", handlers.ItDeskAdminHandler)
-		authorized.GET("/assets/admin", handlers.AssetsAdminHandler)
-		authorized.GET("/procurement/admin", handlers.ProcurementAdminHandler)
 	}
 
 	//ITSM Portal Router Group
@@ -112,7 +110,7 @@ func main() {
 		//authorized.GET("itsm/ticketing/0/admin/work/:id", handlers.GetTicket)
 	}
 
-	//Assets Portal Router Group
+	//ASSETS Portal Router Group
 	assets := router.Group("/assets")
 	assets.Use(middleware.AuthorizeRequest())
 	{
@@ -121,7 +119,7 @@ func main() {
 		authorized.GET("/assets/testing", homeTest)
 	}
 
-	//Procurement Dashboard Portal Router Group
+	//PROCUREMENT Dashboard Portal Router Group
 	procurement := router.Group("/procurement")
 	procurement.Use(middleware.AuthorizeRequest())
 	{
