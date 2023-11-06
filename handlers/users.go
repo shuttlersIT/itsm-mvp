@@ -124,7 +124,7 @@ func UpdateUsername(c *gin.Context, staffID int, username string, password strin
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	_, err := db.Exec("UPDATE staff SET id = ?, username = ?, password = ? WHERE id = ?", id, username, password, id)
+	_, err := db.Exec("UPDATE staff_credentials SET id = ?, username = ?, password = ? WHERE id = ?", id, username, password, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0

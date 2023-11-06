@@ -9,14 +9,15 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/shuttlersIT/itsm-mvp/handlers"
 	"github.com/shuttlersIT/itsm-mvp/structs"
 	"golang.org/x/crypto/bcrypt"
 )
 
+/*
 func hash(pwd string) []byte {
 	return []byte(pwd)
 }
+*/
 
 // Get a user ID from database
 func getCred(c *gin.Context, username string) (int, string) {
@@ -130,8 +131,8 @@ func PasswordLogin(c *gin.Context) {
 	session.Set("user-email", staff.StaffEmail)
 	session.Set("user-firstName", staff.FirstName)
 	session.Set("user-lastName", staff.LastName)
-	session.Set("user-position", handlers.GetDepartment(c, staff.PositionID))
-	session.Set("user-department", handlers.GetDepartment(c, staff.DepartmentID))
+	session.Set("user-position", getPosition(c, staff.PositionID))
+	session.Set("user-department", getDepartment(c, staff.DepartmentID))
 }
 
 // Get an agent id from database
@@ -162,7 +163,7 @@ func GetStaffIdHandler(c *gin.Context) int {
 }
 
 // Update Username
-func updateUserName(c *gin.Context) {
+func UpdateUserName(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -215,19 +216,48 @@ func updateUserName(c *gin.Context) {
 	c.JSON(http.StatusOK, "User updated successfully")
 
 	c.JSON(http.StatusOK, gin.H{"message": "Name updated successfully"})
-
-	return
 }
 
 // Update Password
-func changeUserPassword(c *gin.Context) {
-	userID := getCurrentUserID(c) // Implement a function to get the current user's ID
+func ChangeUserPassword(c *gin.Context, username string) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
+		return
+	}
+
+	var s structs.StaffLoginCredentials
+	err := db.QueryRow("SELECT password FROM staff_credentials WHERE username = ?", username).
+		Scan(&s.Password)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
+		return
+	}
+	//c.JSON(http.StatusOK, s)
+
+	dbPassword := s.Password
 	currentPassword := c.PostForm("current_password")
 	newPassword := c.PostForm("new_password")
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Password hashing failed"})
+		return
+	}
 
-	// Verify the current password and update the password in the database
-	if err := changeUserProfilePassword(userID, currentPassword, newPassword); err != nil {
-		// Handle errors
+	// Compare the hashed password with the provided password
+	error := bcrypt.CompareHashAndPassword([]byte(currentPassword), []byte(dbPassword))
+	if error != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		return
+	}
+
+	// New Password :: Hash to String
+	hash := string(hashedPassword)
+
+	_, err2 := db.Exec("UPDATE staff_credentials SET password = ?, WHERE username = ?", hash, username)
+	if err2 != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -263,7 +293,7 @@ func addStaff(c *gin.Context, u string, hp string) int {
 }
 
 // Register a New User and Info
-func addStaffInfo(c *gin.Context, fn string, ln string, se string, u int, p int, d int) int {
+func AddStaffInfo(c *gin.Context, fn string, ln string, se string, u int, p int, d int) int {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
