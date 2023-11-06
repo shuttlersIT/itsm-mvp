@@ -77,62 +77,57 @@ func main() {
 		authorized.GET("/procurement", handlers.ItsmHandler)
 		authorized.GET("/testing", homeTest)
 	}
+
 	//router.Use(static.Serve("/", static.LocalFile("./templates", true)))
 	var id int
-	ticketRoute := fmt.Sprintf("/ticketing/0/admin/work/%d", id)
+	ticketRoutet := fmt.Sprintf("/admin/ticketing/work/%d", id)
 
 	//ADMIN Router Group
 	admin := router.Group("/admin")
 	admin.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
-		authorized.GET("admin/itsm/ticketing", handlers.ItDeskAdminHandler)
-		authorized.GET("/itsm/ticketing", handlers.ItDeskHandler)
-		authorized.GET("/testing", homeTest)
-		authorized.GET(ticketRoute, handlers.GetTicket)
+		authorized.GET("/admin/ticketing/itportal", handlers.ItDeskPortalHandler)
+		authorized.GET("/admin/itsm/ticketing", handlers.ItDeskAdminHandler)
+		authorized.GET("/admin/ticketing", handlers.ItDeskHandler)
+		authorized.GET("/admin/testing", homeTest)
+		authorized.GET(ticketRoutet, handlers.GetTicket)
 		//authorized.GET("/ticketing/0/admin/work/:id", handlers.GetTicket)
-		authorized.GET("/ticketing/0/admin/work", handlers.ListTickets)
-		authorized.POST("/ticketing/0/admin/work", handlers.CreateTicket)
-		authorized.PUT("/ticketing/0/admin/work/:id", handlers.UpdateTicket)
-		authorized.DELETE("/ticketing/0/admin/work/:id", handlers.DeleteTicket)
-
+		//authorized.GET("/admin/ticketing/work", handlers.ListTickets)
+		//authorized.POST("/admin/ticketing/work", handlers.CreateTicket)
+		//authorized.PUT("/admin/ticketing/work/:id", handlers.UpdateTicket)
+		//authorized.DELETE("/admin/ticketing/work/:id", handlers.DeleteTicket)
+		authorized.GET("/itsm/ticketing/admin", handlers.ItDeskAdminHandler)
+		authorized.GET("/assets/admin", handlers.AssetsAdminHandler)
+		authorized.GET("/procurement/admin", handlers.ProcurementAdminHandler)
 	}
 
 	//ITSM Portal Router Group
 	itsm := router.Group("/itsm")
 	itsm.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
-		authorized.GET("itsm/ticketing/0/admin", handlers.ItDeskAdminHandler)
-		authorized.GET("itsm/ticketing", handlers.ItDeskHandler)
-		authorized.GET("itsm//testing", homeTest)
-		authorized.GET(ticketRoute, handlers.GetTicket)
+		authorized.GET("/itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
+		authorized.GET("/itsm/ticketing", handlers.ItDeskHandler)
+		authorized.GET("/itsm//testing", homeTest)
+		authorized.GET(ticketRoutet, handlers.GetTicket)
 		//authorized.GET("itsm/ticketing/0/admin/work/:id", handlers.GetTicket)
-		authorized.GET("itsm/ticketing/0/admin/work", handlers.ListTickets)
-		authorized.POST("itsm/ticketing/0/admin/work", handlers.CreateTicket)
-		authorized.PUT("itsm/ticketing/0/admin/work/:id", handlers.UpdateTicket)
-		authorized.DELETE("itsm/ticketing/0/admin/work/:id", handlers.DeleteTicket)
-
 	}
 
 	//Assets Portal Router Group
 	assets := router.Group("/assets")
 	assets.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("assets/portal", handlers.AssetsPortalHandler)
-		authorized.GET("assets/1/admin", handlers.AssetsAdminHandler)
-		authorized.GET("assets", handlers.AssetsHandler)
-		authorized.GET("assets/testing", homeTest)
+		authorized.GET("/assets/portal", handlers.AssetsPortalHandler)
+		authorized.GET("/assets", handlers.AssetsHandler)
+		authorized.GET("/assets/testing", homeTest)
 	}
 
 	//Procurement Dashboard Portal Router Group
 	procurement := router.Group("/procurement")
 	procurement.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("procurement/portal", handlers.ProcurementPortalHandler)
-		authorized.GET("procurement/2/admin", handlers.ProcurementAdminHandler)
-		authorized.GET("procurement", handlers.ProcurementHandler)
-		authorized.GET("procurement/testing", homeTest)
+		authorized.GET("/procurement/portal", handlers.ProcurementPortalHandler)
+		authorized.GET("/procurement", handlers.ProcurementHandler)
+		authorized.GET("/procurement/testing", homeTest)
 	}
 
 	if err := router.Run(":5152"); err != nil {
