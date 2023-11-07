@@ -437,6 +437,7 @@ func GetTicketByRelatedTickets(c *gin.Context, relatedticketid int) (int, []stru
 		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Category, &t.SubCategory, &t.Priority, &t.SLA, &t.StaffID, &t.AgentID, &t.CreatedAt, &t.UpdatedAt, &t.DueAt, &t.AssetID, &t.RelatedTicketID, &t.Tag, &t.Site, &t.Status, &t.Status, &t.AttachmentID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return 0, tickets
+			//continue // break here
 		}
 		tickets = append(tickets, t)
 	}
@@ -448,7 +449,14 @@ func GetTicketByRelatedTickets(c *gin.Context, relatedticketid int) (int, []stru
 // Get a ticket by Department
 func GetTicketsByDepartment(c *gin.Context, dept int) (int, []structs.Ticket) {
 	var tickets []structs.Ticket
-	id := dept
+	var exist int
+	department := dept
+	status, staff := GetStaffByDepartment(c, department)
+
+	if status == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No Staff in this department"})
+		return 0, tickets
+	}
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
@@ -456,51 +464,32 @@ func GetTicketsByDepartment(c *gin.Context, dept int) (int, []structs.Ticket) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
 		return 0, tickets
 	}
-	rows, err := db.Query("SELECT id, subject, description, category_id, sub_category_id, priority_id, sla_id, staff_id, agent_id, created_at, updated_at, due_at, asset_id, related_ticket_id, tag, site, status, attachment_id FROM tickets WHERE related_ticket_id = ?", id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return 0, tickets
-	}
-	defer rows.Close()
 
-	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Category, &t.SubCategory, &t.Priority, &t.SLA, &t.StaffID, &t.AgentID, &t.CreatedAt, &t.UpdatedAt, &t.DueAt, &t.AssetID, &t.RelatedTicketID, &t.Tag, &t.Site, &t.Status, &t.Status, &t.AttachmentID); err != nil {
+	for _, eachStaff := range staff {
+		id := eachStaff.StaffID
+		rows, err := db.Query("SELECT id, subject, description, category_id, sub_category_id, priority_id, sla_id, staff_id, agent_id, created_at, updated_at, due_at, asset_id, related_ticket_id, tag, site, status, attachment_id FROM tickets WHERE staff_id = ?", id)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return 0, tickets
+			continue // break here
 		}
-		tickets = append(tickets, t)
-	}
+		defer rows.Close()
 
-	c.JSON(http.StatusOK, tickets)
-	return 1, tickets
-}
-
-// List all tickets
-func ListTicketsOperation(c *gin.Context) {
-	// Don't forget type assertion when getting the connection from context.
-	db, ok := c.MustGet("databaseConn").(*sql.DB)
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
-	}
-
-	rows, err := db.Query("SELECT id, subject, description, category_id, sub_category_id, priority_id, sla_id, staff_id, agent_id, created_at, updated_at due_at, asset_id, related_ticket_id, tag, site, status, attachment_id FROM tickets WHERE staff_id = ?")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	defer rows.Close()
-
-	var tickets []structs.Ticket
-	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Category, &t.SubCategory, &t.Priority, &t.SLA, &t.StaffID, &t.AgentID, &t.CreatedAt, &t.UpdatedAt, &t.DueAt, &t.AssetID, &t.RelatedTicketID, &t.Tag, &t.Site, &t.Status, &t.Status, &t.AttachmentID); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+		for rows.Next() {
+			var t structs.Ticket
+			if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Category, &t.SubCategory, &t.Priority, &t.SLA, &t.StaffID, &t.AgentID, &t.CreatedAt, &t.UpdatedAt, &t.DueAt, &t.AssetID, &t.RelatedTicketID, &t.Tag, &t.Site, &t.Status, &t.Status, &t.AttachmentID); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				continue // break here
+			}
+			tickets = append(tickets, t)
 		}
-		tickets = append(tickets, t)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	if len(tickets) > 0 {
+		c.JSON(http.StatusOK, tickets)
+		exist = 1
+	} else {
+		exist = 0
+	}
+
+	return exist, tickets
 }

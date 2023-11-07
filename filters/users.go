@@ -95,43 +95,63 @@ func GetStaffByUsername(c *gin.Context, u int) (int, structs.Staff) {
 }
 
 // Get a Staff by Position
-func GetStaffByPosition(c *gin.Context, p int) (int, structs.Staff) {
-	var s structs.Staff
+func GetStaffByPosition(c *gin.Context, p int) (int, []structs.Staff) {
+	var staff []structs.Staff
 	position := p
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return 0, s
+		return 0, staff
 	}
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username_id, position_id, department_id FROM staff WHERE position_id = ?", position).
-		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
+	rows, err := db.Query("SELECT id, first_name, last_name, staff_email, username_id, position_id, department_id FROM staff WHERE position_id = ?", position)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
-		return 0, s
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return 0, staff
 	}
-	c.JSON(http.StatusOK, s)
-	return 1, s
+	defer rows.Close()
+
+	for rows.Next() {
+		var s structs.Staff
+		if err := rows.Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return 0, staff
+		}
+		staff = append(staff, s)
+	}
+
+	c.JSON(http.StatusOK, staff)
+	return 1, staff
 }
 
 // Get a Staff by Department
-func GetStaffByDepartment(c *gin.Context, dept int) (int, structs.Staff) {
-	var s structs.Staff
+func GetStaffByDepartment(c *gin.Context, dept int) (int, []structs.Staff) {
+	var staff []structs.Staff
 	department := dept
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return 0, s
+		return 0, staff
 	}
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE department_id = ?", department).
-		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
+	rows, err := db.Query("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE department_id = ?", department)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
-		return 0, s
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return 0, staff
 	}
-	c.JSON(http.StatusOK, s)
-	return 1, s
+	defer rows.Close()
+
+	for rows.Next() {
+		var s structs.Staff
+		if err := rows.Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return 0, staff
+		}
+		staff = append(staff, s)
+	}
+
+	c.JSON(http.StatusOK, staff)
+	return 1, staff
 }
