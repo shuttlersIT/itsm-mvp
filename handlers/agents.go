@@ -23,7 +23,7 @@ func GetAgentHandler(c *gin.Context) {
 	adminSession := sessions.Default(c)
 	email := adminSession.Get("user-email")
 	var a structs.Agent
-	err := db.QueryRow("SELECT id, first_name, last_name, agent_email, username, role_id, unit, supervisor_id FROM agents WHERE email = ?", email).
+	err := db.QueryRow("SELECT id, first_name, last_name, agent_email, usernam_id, role_id, unit, supervisor_id FROM agents WHERE email = ?", email).
 		Scan(&a.AgentID, &a.FirstName, &a.LastName, &a.AgentEmail, &a.Username, &a.RoleID, &a.Unit, &a.SupervisorID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
@@ -50,7 +50,7 @@ func UpdateAgentHandlers(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err := db.Exec("UPDATE agents SET first_name = ?, last_name = ?, agent_email = ?, username = ?, role_id = ?, unit = ?, supervisor_id = ?, WHERE id = ?", t.FirstName, t.LastName, t.AgentEmail, t.Username, t.RoleID, t.Unit, t.SupervisorID, id)
+	_, err := db.Exec("UPDATE agents SET first_name = ?, last_name = ?, agent_email = ?, username_id = ?, role_id = ?, unit = ?, supervisor_id = ?, WHERE id = ?", t.FirstName, t.LastName, t.AgentEmail, t.Username, t.RoleID, t.Unit, t.SupervisorID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -86,7 +86,7 @@ func ListAgentsHandler(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query("SELECT id, first_name, last_name, agent_email, username, role_id, unit, supervisor_id FROM agents")
+	rows, err := db.Query("SELECT id, first_name, last_name, agent_email, username_id, role_id, unit, supervisor_id FROM agents")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -23,7 +23,7 @@ func GetUser(c *gin.Context) {
 	session := sessions.Default(c)
 	id := session.Get("user-id")
 	var s structs.Staff
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE id = ?", id).
+	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username_id, position_id, department_id FROM staff WHERE id = ?", id).
 		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
@@ -46,7 +46,7 @@ func GetUserByID(c *gin.Context, id int) structs.Staff {
 	//session := sessions.Default(c)
 	//id := session.Get("user-id")
 
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE id = ?", id).
+	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username_id, position_id, department_id FROM staff WHERE id = ?", id).
 		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
@@ -69,7 +69,7 @@ func getUserByEmail(c *gin.Context, e string) int {
 	//session := sessions.Default(c)
 	//id := session.Get("user-id")
 	var s structs.Staff
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username, position_id, department_id FROM staff WHERE email = ?", e).
+	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username_id, position_id, department_id FROM staff WHERE email = ?", e).
 		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
@@ -97,7 +97,7 @@ func UpdateUser(c *gin.Context, user structs.Staff) int {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username = ?, position_id = ?, department_id = ?, WHERE id = ?", user.FirstName, user.LastName, user.StaffEmail, user.Username, user.PositionID, user.DepartmentID, id)
+	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username_id = ?, position_id = ?, department_id = ?, WHERE id = ?", user.FirstName, user.LastName, user.StaffEmail, user.Username, user.PositionID, user.DepartmentID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
@@ -124,7 +124,7 @@ func UpdateUsername(c *gin.Context, staffID int, username string, password strin
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	_, err := db.Exec("UPDATE staff_credentials SET id = ?, username = ?, password = ? WHERE id = ?", id, username, password, id)
+	_, err := db.Exec("UPDATE staff_credentials SET id = ?, username_id = ?, password = ? WHERE id = ?", id, username, password, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
@@ -173,7 +173,7 @@ func CreateUser(c *gin.Context) int {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 0
 	}
-	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
+	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username_id) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 0
