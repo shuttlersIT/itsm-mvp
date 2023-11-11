@@ -41,7 +41,7 @@ type Ticket struct {
 	AgentID         int       `json:"agent_id"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
-	DueAt           string    `json:"due_at"`
+	DueAt           time.Time `json:"due_at"`
 	AssetID         string    `json:"asset_id"`
 	RelatedTicketID int       `json:"related_ticket_id"`
 	Tag             string    `json:"tag"`
@@ -52,7 +52,7 @@ type Ticket struct {
 
 type Asset struct {
 	ID            int       `json:"id"`
-	AssetID       string    `json:"asset_id"`
+	AssetID       int       `json:"asset_id"`
 	AssetType     string    `json:"asset_type"`
 	AssetName     string    `json:"asset_name"`
 	Description   string    `json:"description"`
@@ -64,6 +64,7 @@ type Asset struct {
 	Vendor        string    `json:"vendor"`
 	Site          string    `json:"site"`
 	Status        string    `json:"status"`
+	CreatedBy     int       `json:"created_by"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 }
@@ -180,4 +181,15 @@ type AssetType struct {
 	AssetType   string    `json:"asset_type"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type AssetAssignment struct {
+	AssignmentID   int       `json:"assignment_id"`
+	AssetID        int       `json:"asset_id"`
+	StaffID        int       `json:"staff_id"`
+	AssignedBy     int       `json:"assigned_by"`
+	AssignmentType string    `json:"assignment_type"`
+	DueAt          time.Time `json:"due_at"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }

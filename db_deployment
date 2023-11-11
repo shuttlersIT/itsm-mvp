@@ -10,7 +10,7 @@ CREATE TABLE staff (
 	position_id   INT,
 	department_id INT,
     FOREIGN KEY (position_id) REFERENCES positions(id),
-    FOREIGN KEY (department_id) REFERENCES departments(id)
+    FOREIGN KEY (department_id) REFERENCES departments(id),
 	FOREIGN KEY (username_id) REFERENCES staff_credentials(id)
 );
 
@@ -27,7 +27,7 @@ CREATE TABLE agents (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (role_id) REFERENCES roles(id),
     FOREIGN KEY (unit_id) REFERENCES units(id),
-    FOREIGN KEY (supervisor_id) REFERENCES agents(id)
+    FOREIGN KEY (supervisor_id) REFERENCES agents(id),
 	FOREIGN KEY (username_id) REFERENCES agent_credentials(id)
 );
 
@@ -75,8 +75,10 @@ CREATE TABLE assets (
 	vendor VARCHAR(100),
 	site VARCHAR(100),
 	status VARCHAR(100) NOT NULL,
+	created_by VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	FOREIGN KEY (created_by) REFERENCES agents(id)
 );
 
 CREATE TABLE sla (
@@ -198,4 +200,18 @@ CREATE TABLE asset_type (
 	asset_type VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE asset_assignment (
+	id   INT AUTO_INCREMENT PRIMARY KEY,
+	asset_id VARCHAR(100) NOT NULL UNIQUE,
+	staff_id VARCHAR(100),
+	assigned_by VARCHAR(100) NOT NULL,
+	assignment_type ENUM('buffer', 'permanent', 'temporary', 'lease'),
+	due_at  DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	FOREIGN KEY (asset_id) REFERENCES assets(id),
+    FOREIGN KEY (staff_id) REFERENCES staff(id),
+	FOREIGN KEY (assigned_by) REFERENCES agents(id)
 );
