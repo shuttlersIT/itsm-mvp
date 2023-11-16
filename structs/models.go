@@ -42,7 +42,7 @@ type Ticket struct {
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 	DueAt           time.Time `json:"due_at"`
-	AssetID         string    `json:"asset_id"`
+	AssetID         int       `json:"asset_id"`
 	RelatedTicketID int       `json:"related_ticket_id"`
 	Tag             string    `json:"tag"`
 	Site            string    `json:"site"`

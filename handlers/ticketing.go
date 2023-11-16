@@ -268,6 +268,27 @@ func GetTicket(c *gin.Context) {
 	c.JSON(http.StatusOK, t)
 }
 
+// Get a ticket by ID
+func GetTicket2(c *gin.Context, tid int) (int, structs.Ticket) {
+	id := tid
+	var t structs.Ticket
+
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return 0, t
+	}
+	err := db.QueryRow("SELECT id, subject, description, status FROM tickets WHERE id = ?", id).
+		Scan(&t.ID, &t.Subject, &t.Description, &t.Status)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Ticket not found"})
+		return 0, t
+	}
+	c.JSON(http.StatusOK, t)
+	return 1, t
+}
+
 // Update a ticket by ID
 func UpdateTicket(c *gin.Context) {
 	id := c.Param("id")

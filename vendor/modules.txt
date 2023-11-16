@@ -4,6 +4,12 @@ cloud.google.com/go/compute/internal
 # cloud.google.com/go/compute/metadata v0.2.3
 ## explicit; go 1.19
 cloud.google.com/go/compute/metadata
+# dario.cat/mergo v1.0.0
+## explicit; go 1.13
+# github.com/bep/godartsass v0.16.0
+## explicit; go 1.15
+# github.com/bep/golibsass v1.1.0
+## explicit; go 1.13
 # github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff
 ## explicit
 github.com/boj/redistore
@@ -33,6 +39,16 @@ github.com/bytedance/sonic/utf8
 # github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311
 ## explicit; go 1.15
 github.com/chenzhuoyu/base64x
+# github.com/cli/safeexec v1.0.0
+## explicit; go 1.15
+# github.com/cosmtrek/air v1.49.0
+## explicit; go 1.21
+# github.com/creack/pty v1.1.18
+## explicit; go 1.13
+# github.com/fatih/color v1.14.1
+## explicit; go 1.17
+# github.com/fsnotify/fsnotify v1.6.0
+## explicit; go 1.16
 # github.com/gabriel-vasile/mimetype v1.4.2
 ## explicit; go 1.20
 github.com/gabriel-vasile/mimetype
@@ -76,6 +92,8 @@ github.com/goccy/go-json/internal/encoder/vm_color_indent
 github.com/goccy/go-json/internal/encoder/vm_indent
 github.com/goccy/go-json/internal/errors
 github.com/goccy/go-json/internal/runtime
+# github.com/gohugoio/hugo v0.111.3
+## explicit; go 1.18
 # github.com/golang/protobuf v1.5.3
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
@@ -101,6 +119,8 @@ github.com/klauspost/cpuid/v2
 # github.com/leodido/go-urn v1.2.4
 ## explicit; go 1.16
 github.com/leodido/go-urn
+# github.com/mattn/go-colorable v0.1.13
+## explicit; go 1.15
 # github.com/mattn/go-isatty v0.0.19
 ## explicit; go 1.15
 github.com/mattn/go-isatty
@@ -113,6 +133,8 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
+# github.com/pelletier/go-toml v1.9.5
+## explicit; go 1.12
 # github.com/pelletier/go-toml/v2 v2.0.8
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
@@ -120,6 +142,10 @@ github.com/pelletier/go-toml/v2/internal/characters
 github.com/pelletier/go-toml/v2/internal/danger
 github.com/pelletier/go-toml/v2/internal/tracker
 github.com/pelletier/go-toml/v2/unstable
+# github.com/spf13/afero v1.9.3
+## explicit; go 1.16
+# github.com/tdewolff/parse/v2 v2.6.5
+## explicit; go 1.13
 # github.com/twitchyliquid64/golang-asm v0.15.1
 ## explicit; go 1.13
 github.com/twitchyliquid64/golang-asm/asm/arch
