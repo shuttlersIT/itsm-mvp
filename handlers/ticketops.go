@@ -1313,7 +1313,7 @@ func ListSubCategories(c *gin.Context) ([]structs.SubCategory, error) {
 //////// STATUS ////////
 
 // Get a Status by ID
-func GetStatus2(c *gin.Context, sid int) (*structs.Status, error) {
+func GetStatus(c *gin.Context, sid int) (*structs.Status, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get status handler"})

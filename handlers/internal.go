@@ -53,3 +53,27 @@ func getDepartment(c *gin.Context, did int) string {
 	c.JSON(http.StatusOK, s)
 	return s.DepartmentName
 }
+
+/*
+// Get a department from database
+func getRole(c *gin.Context, rid int) string {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return ""
+	}
+
+	//session := sessions.Default(c)
+	id := rid
+	var s structs.Role
+	err := db.QueryRow("SELECT id, role_name FROM departments WHERE id = ?", id).
+		Scan(&s.RoleID, &s.RoleName)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
+		return ""
+	}
+	c.JSON(http.StatusOK, s)
+	return s.RoleName
+}
+*/
