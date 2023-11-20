@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/shuttlersIT/itsm-mvp/scanners"
 	"github.com/shuttlersIT/itsm-mvp/structs"
 )
 
@@ -40,32 +42,31 @@ func DeleteTicket(c *gin.Context) {
 */
 
 // List all tickets
-func ListTicketsOperation(c *gin.Context) {
+func ListTicketsOperation(c *gin.Context) ([]*structs.Ticket, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, fmt.Errorf("unable to reach db")
 	}
 
-	rows, err := db.Query("SELECT id, subject, description, category_id, sub_category_id, priority_id, sla_id, staff_id, agent_id, created_at, updated_at due_at, asset_id, related_ticket_id, tag, site, status, attachment_id FROM tickets")
+	rows, err := db.Query("SELECT * FROM tickets")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, fmt.Errorf("there are no tickets")
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	tickets := []*structs.Ticket{}
 	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Category, &t.SubCategory, &t.Priority, &t.SLA, &t.StaffID, &t.AgentID, &t.CreatedAt, &t.UpdatedAt, &t.DueAt, &t.AssetID, &t.RelatedTicketID, &t.Tag, &t.Site, &t.Status, &t.Status, &t.AttachmentID); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+		ticket, err := scanners.ScanIntoTicket(rows)
+		if err != nil {
+			return nil, err
 		}
-		tickets = append(tickets, t)
+		tickets = append(tickets, ticket)
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	return tickets, nil
 }
 
 // Create a new ticket
@@ -112,23 +113,26 @@ func CreateTicketOperation(c *gin.Context, ts string, td int, cat int, scat int,
 }
 
 // Get a ticket by ID
-func GetTicketOperation(c *gin.Context, tid int) {
+func GetTicketOperation(c *gin.Context, tid int) (*structs.Ticket, error) {
 	id := tid
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, fmt.Errorf("unable to read DB")
 	}
-	var t structs.Ticket
-	err := db.QueryRow("SELECT id, subject, description, category_id, sub_category_id, priority_id, sla_id, staff_id, agent_id, created_at, updated_at, due_at, asset_id, related_ticket_id, tag, site, status, attachment_id FROM tickets WHERE id = ?", id).
-		Scan(&t.ID, &t.Subject, &t.Description, &t.Category, &t.SubCategory, &t.Priority, &t.SLA, &t.StaffID, &t.AgentID, &t.CreatedAt, &t.UpdatedAt, &t.DueAt, &t.AssetID, &t.RelatedTicketID, &t.Tag, &t.Site, &t.Status, &t.Status, &t.AttachmentID)
+	rows, err := db.Query("SELECT * FROM tickets WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Ticket not found"})
-		return
+		return nil, err
 	}
-	c.JSON(http.StatusOK, t)
+
+	for rows.Next() {
+		return scanners.ScanIntoTicket(rows)
+	}
+
+	return nil, fmt.Errorf("ticket %d not found", id)
 }
 
 // Update a ticket by ID

@@ -16,14 +16,15 @@ import (
 )
 
 func main() {
-	router := gin.Default()
-
 	//initiate mysql database
 	status, db := database.ConnectMysql()
 	fmt.Println(status)
 	database.TableExists(db, "tickets")
 
-	router.Use(middleware.ApiMiddleware(db))
+	//API ROUTER
+	api := gin.Default()
+
+	api.Use(middleware.ApiMiddleware(db))
 
 	//RedisHost := "127.0.0.1"
 	//RedisPort := "6379"
@@ -47,7 +48,124 @@ func main() {
 		Secure:   true,
 		HttpOnly: true,
 	})
-	router.Use(sessions.Sessions("itsmsession", store))
+	api.Use(sessions.Sessions("itsmsession", store))
+
+	// We check for errors.
+
+	//sessionStore, _ := sessions.NewRedisStore(10, "tcp", RedisHost+":"+RedisPort, "", []byte(token))
+	//router.Use(sessions.Sessions("portalsession", sessionStore))
+
+	api.Use(gin.Logger())
+	api.Use(gin.Recovery())
+	api.Static("/css", "templates/css")
+	api.Static("/img", "templates/img")
+	api.Static("/js", "templates/js")
+	api.LoadHTMLGlob("templates/*.html")
+
+	api.GET("/", handlers.IndexHandler)
+	api.GET("/index", handlers.IndexHandler)
+	api.GET("/login", handlers.LoginHandler)
+	api.GET("/auth", handlers.AuthHandler)
+	api.GET("/logout", handlers.LogoutHandler)
+	api.GET("/login/admin", handlers.GetAgentHandler)
+
+	//Login Form Handlers
+	api.POST("/register", handlers.Register)
+	api.POST("/formlogin", handlers.PasswordLogin)
+
+	//Index Route Router Group
+	authorized := api.Group("/")
+	authorized.Use(middleware.AuthorizeRequest())
+	{
+		authorized.GET("/itsm", handlers.ItsmHandler)
+		authorized.GET("/assets", handlers.ItsmHandler)
+		authorized.GET("/procurement", handlers.ItsmHandler)
+		authorized.GET("/admin", handlers.ItsmHandler)
+		authorized.GET("/testing", homeTest)
+	}
+
+	//router.Use(static.Serve("/", static.LocalFile("./templates", true)))
+	var id2 int
+	ticketRouter := fmt.Sprintf("/admin/ticketing/work/%d", id2)
+
+	//ADMIN Router Group
+	admin2 := api.Group("/admin")
+	admin2.Use(middleware.AuthorizeRequest())
+	{
+		authorized.GET("/admin/testing", homeTest)
+		authorized.GET("/admin/itsm/ticketing", handlers.ItDeskAdminHandler)
+		authorized.GET("/admin/assets", handlers.AssetsAdminHandler)
+		authorized.GET("/admin/procurement", handlers.ProcurementAdminHandler)
+		authorized.GET(ticketRouter, handlers.GetTicket)
+		//authorized.GET("/ticketing/0/admin/work/:id", handlers.GetTicket)
+		//authorized.GET("/admin/ticketing/work", handlers.ListTickets)
+		//authorized.POST("/admin/ticketing/work", handlers.CreateTicket)
+		//authorized.PUT("/admin/ticketing/work/:id", handlers.UpdateTicket)
+		//authorized.DELETE("/admin/ticketing/work/:id", handlers.DeleteTicket)
+	}
+
+	//ITSM Portal Router Group
+	itsm := api.Group("/itsm")
+	itsm.Use(middleware.AuthorizeRequest())
+	{
+		authorized.GET("/itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
+		authorized.GET("/itsm/ticketing", handlers.ItDeskHandler)
+		authorized.GET("/itsm//testing", homeTest)
+		authorized.GET(ticketRouter, handlers.GetTicket)
+		//authorized.GET("itsm/ticketing/0/admin/work/:id", handlers.GetTicket)
+	}
+
+	//ASSETS Portal Router Group
+	assets := api.Group("/assets")
+	assets.Use(middleware.AuthorizeRequest())
+	{
+		authorized.GET("/assets/portal", handlers.AssetsPortalHandler)
+		authorized.GET("/assets", handlers.AssetsHandler)
+		authorized.GET("/assets/testing", homeTest)
+	}
+
+	//PROCUREMENT Dashboard Portal Router Group
+	procurement := api.Group("/procurement")
+	procurement.Use(middleware.AuthorizeRequest())
+	{
+		authorized.GET("/procurement/portal", handlers.ProcurementPortalHandler)
+		authorized.GET("/procurement", handlers.ProcurementHandler)
+		authorized.GET("/procurement/testing", homeTest)
+	}
+
+	if err := api.Run(":5152"); err != nil {
+		log.Fatal(err)
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////
+	//MAIN ROUTER
+	router := gin.Default()
+
+	router.Use(middleware.ApiMiddleware(db))
+
+	//RedisHost := "127.0.0.1"
+	//RedisPort := "6379"
+
+	//Dashboard APP
+	//router := gin.Default()
+	token1, err := handlers.RandToken(64)
+	if err != nil {
+		log.Fatal("unable to generate random token: ", err)
+	}
+
+	store1, storeError1 := sessions.NewRedisStore(10, "tcp", "redisDB:6379", "", []byte(token1))
+	if storeError1 != nil {
+		fmt.Println(storeError1)
+		log.Fatal("Unable to create work with redis session ", storeError1)
+	}
+	//store := sessions.NewCookieStore([]byte(token))
+	store.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   86400,
+		Secure:   true,
+		HttpOnly: true,
+	})
+	router.Use(sessions.Sessions("itsmsession", store1))
 
 	// We check for errors.
 
@@ -73,29 +191,29 @@ func main() {
 	router.POST("/formlogin", handlers.PasswordLogin)
 
 	//Index Route Router Group
-	authorized := router.Group("/")
-	authorized.Use(middleware.AuthorizeRequest())
+	authorized1 := router.Group("/")
+	authorized1.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/itsm", handlers.ItsmHandler)
-		authorized.GET("/assets", handlers.ItsmHandler)
-		authorized.GET("/procurement", handlers.ItsmHandler)
-		authorized.GET("/admin", handlers.ItsmHandler)
-		authorized.GET("/testing", homeTest)
+		authorized1.GET("/itsm", handlers.ItsmHandler)
+		authorized1.GET("/assets", handlers.ItsmHandler)
+		authorized1.GET("/procurement", handlers.ItsmHandler)
+		authorized1.GET("/admin", handlers.ItsmHandler)
+		authorized1.GET("/testing", homeTest)
 	}
 
 	//router.Use(static.Serve("/", static.LocalFile("./templates", true)))
 	var id int
-	ticketRoutet := fmt.Sprintf("/admin/ticketing/work/%d", id)
+	ticketRouter1 := fmt.Sprintf("/admin/ticketing/work/%d", id)
 
 	//ADMIN Router Group
-	admin := router.Group("/admin")
-	admin.Use(middleware.AuthorizeRequest())
+	admin1 := router.Group("/admin")
+	admin1.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/admin/testing", homeTest)
-		authorized.GET("/admin/itsm/ticketing", handlers.ItDeskAdminHandler)
-		authorized.GET("/admin/assets", handlers.AssetsAdminHandler)
-		authorized.GET("/admin/procurement", handlers.ProcurementAdminHandler)
-		authorized.GET(ticketRoutet, handlers.GetTicket)
+		authorized1.GET("/admin/testing", homeTest)
+		authorized1.GET("/admin/itsm/ticketing", handlers.ItDeskAdminHandler)
+		authorized1.GET("/admin/assets", handlers.AssetsAdminHandler)
+		authorized1.GET("/admin/procurement", handlers.ProcurementAdminHandler)
+		authorized1.GET(ticketRouter1, handlers.GetTicket)
 		//authorized.GET("/ticketing/0/admin/work/:id", handlers.GetTicket)
 		//authorized.GET("/admin/ticketing/work", handlers.ListTickets)
 		//authorized.POST("/admin/ticketing/work", handlers.CreateTicket)
@@ -104,38 +222,37 @@ func main() {
 	}
 
 	//ITSM Portal Router Group
-	itsm := router.Group("/itsm")
-	itsm.Use(middleware.AuthorizeRequest())
+	itsm1 := router.Group("/itsm")
+	itsm1.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
-		authorized.GET("/itsm/ticketing", handlers.ItDeskHandler)
-		authorized.GET("/itsm//testing", homeTest)
-		authorized.GET(ticketRoutet, handlers.GetTicket)
+		authorized1.GET("/itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
+		authorized1.GET("/itsm/ticketing", handlers.ItDeskHandler)
+		authorized1.GET("/itsm//testing", homeTest)
+		authorized1.GET(ticketRouter1, handlers.GetTicket)
 		//authorized.GET("itsm/ticketing/0/admin/work/:id", handlers.GetTicket)
 	}
 
 	//ASSETS Portal Router Group
-	assets := router.Group("/assets")
-	assets.Use(middleware.AuthorizeRequest())
+	assets1 := router.Group("/assets")
+	assets1.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/assets/portal", handlers.AssetsPortalHandler)
-		authorized.GET("/assets", handlers.AssetsHandler)
-		authorized.GET("/assets/testing", homeTest)
+		authorized1.GET("/assets/portal", handlers.AssetsPortalHandler)
+		authorized1.GET("/assets", handlers.AssetsHandler)
+		authorized1.GET("/assets/testing", homeTest)
 	}
 
 	//PROCUREMENT Dashboard Portal Router Group
-	procurement := router.Group("/procurement")
-	procurement.Use(middleware.AuthorizeRequest())
+	procurement1 := router.Group("/procurement")
+	procurement1.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/procurement/portal", handlers.ProcurementPortalHandler)
-		authorized.GET("/procurement", handlers.ProcurementHandler)
-		authorized.GET("/procurement/testing", homeTest)
+		authorized1.GET("/procurement/portal", handlers.ProcurementPortalHandler)
+		authorized1.GET("/procurement", handlers.ProcurementHandler)
+		authorized1.GET("/procurement/testing", homeTest)
 	}
 
-	if err := router.Run(":5152"); err != nil {
+	if err := router.Run(":5151"); err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func homeTest(c *gin.Context) {

@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/shuttlersIT/itsm-mvp/scanners"
 	"github.com/shuttlersIT/itsm-mvp/structs"
 )
 
@@ -1455,6 +1457,27 @@ func GetStatus(c *gin.Context, sid int) {
 		return
 	}
 	c.JSON(http.StatusOK, s)
+}
+
+func GetStatus2(c *gin.Context, sid int) (*structs.Status, error) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get status handler"})
+		fmt.Println("Unable to reach DB from get status handler")
+	}
+
+	//session := sessions.Default(c)
+	id := sid
+	rows, err := db.Query("SELECT id, status_name FROM status WHERE id = ?", id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Status not found"})
+		return nil, err
+	}
+	for rows.Next() {
+		return scanners.ScanIntoStatus(rows)
+	}
+	return nil, fmt.Errorf("status %d not found", id)
 }
 
 // Update a category by ID
