@@ -418,13 +418,14 @@ func GetAssetByTags(c *gin.Context, tagid int) (int, []structs.Asset) {
 
 // Get a ticket by Ticket
 func GetAssetByTicket(c *gin.Context, ticketid int) (int, structs.Asset) {
+
 	var asset structs.Asset
 	var assetID int
 	ticket := ticketid
 	exists := 0
 	status := 0
 
-	stat, tickets := handlers.GetTicket2(c, ticket)
+	stat, tickets := handlers.GetTicket(c, ticket)
 	if stat > 0 {
 
 		if tickets.AssetID == 0 {

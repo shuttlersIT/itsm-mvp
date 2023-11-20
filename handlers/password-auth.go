@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -18,6 +19,44 @@ func hash(pwd string) []byte {
 	return []byte(pwd)
 }
 */
+
+// Get Position by Name
+func getPositionByName(c *gin.Context, positionName string) (*structs.Position, int, error) {
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get position by name handler"})
+		return nil, 0, fmt.Errorf("unable to reach DB")
+	}
+
+	var position structs.Position
+	err := db.QueryRow("SELECT id, position_name FROM positions WHERE position_name = ?", positionName).
+		Scan(&position.PositionID, &position.PositionName)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Position not found"})
+		return nil, 0, fmt.Errorf("position not found")
+	}
+
+	return &position, position.PositionID, nil
+}
+
+// Get Department by Name
+func getDepartmentByName(c *gin.Context, departmentName string) (*structs.Department, int, error) {
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get department by name handler"})
+		return nil, 0, fmt.Errorf("position not found")
+	}
+
+	var department structs.Department
+	err := db.QueryRow("SELECT id, department_name FROM departments WHERE department_name = ?", departmentName).
+		Scan(&department.DepartmentID, &department.DepartmentName)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Department not found"})
+		return nil, 0, fmt.Errorf("department not found")
+	}
+
+	return &department, department.DepartmentID, nil
+}
 
 // Get a user ID from database
 func getCred(c *gin.Context, username string) (int, string) {
@@ -76,8 +115,8 @@ func Register(c *gin.Context) {
 		return
 	}
 	hash := string(hashedPassword)
-	positionID := getPositionByName(c, position)
-	departmentID := getDepartmentByName(c, department)
+	_, positionID, _ := getPositionByName(c, position)
+	_, departmentID, _ := getDepartmentByName(c, department)
 	usernameID := addStaff(c, username, hash)
 
 	// Add User to DB
@@ -164,6 +203,11 @@ func GetStaffIdHandler(c *gin.Context) int {
 
 // Update Username
 func UpdateUserName(c *gin.Context) {
+	var positionError error
+	var departmentError error
+	//var positionDB *structs.Position
+	//var departmentDB *structs.Department
+
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -198,8 +242,14 @@ func UpdateUserName(c *gin.Context) {
 	staff.LastName = last_name
 	staff.StaffEmail = staff_email
 	staff.Username = getUserByEmail(c, staff.StaffEmail)
-	staff.PositionID = getPositionByName(c, position)
-	staff.DepartmentID = getDepartmentByName(c, department)
+	_, staff.PositionID, positionError = getPositionByName(c, position)
+	if positionError != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": positionError.Error()})
+	}
+	_, staff.DepartmentID, departmentError = getDepartmentByName(c, department)
+	if departmentError != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": departmentError.Error()})
+	}
 
 	_, err := db.Exec("UPDATE staff_credentials SET username = ? WHERE id = ?", username, staff.Username)
 	if err != nil {

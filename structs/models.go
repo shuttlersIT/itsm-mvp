@@ -137,14 +137,14 @@ type Role struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type Categories struct {
+type Category struct {
 	CategoryID   int       `json:"category_id"`
 	CategoryName string    `json:"category_name"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-type SubCategories struct {
+type SubCategory struct {
 	SubCategoryID   int       `json:"sub_category_id"`
 	SubCategoryName string    `json:"sub_category_name"`
 	CategoryID      int       `json:"category_id"`

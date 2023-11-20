@@ -42,14 +42,32 @@ func CreateTicketsTable(db *sql.DB) error {
 	query := `
         CREATE TABLE IF NOT EXISTS tickets (
             id INT AUTO_INCREMENT PRIMARY KEY,
-			first_name    VARCHAR(100) NOT NULL,
-			last_name     VARCHAR(100) NOT NULL,
-			staff_email   VARCHAR(100) NOT NULL,
-			username     VARCHAR(50) NOT NULL,
-			position_iD   INT,
-			department_iD INT,
-    		FOREIGN KEY (position_id) REFERENCES positions(id),
-    		FOREIGN KEY (department_id) REFERENCES departments(id)
+			subject VARCHAR(255) NOT NULL,
+			description TEXT,
+			category_id INT,
+			sub_category_id INT,
+			priority_id INT,
+			sla_id INT,
+			staff_id INT,
+			agent_id INT,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			due_at  DATE,
+			asset_id INT,
+			related_ticket_id INT,
+			tag   VARCHAR(50) NOT NULL,
+			site  VARCHAR(50) NOT NULL,
+    		status ENUM('open', 'pending', 'in_progress', 'waiting for 3rd-Party-escalated', 'waiting for 3rd-Party-vendor', 'waiting for approval', 'waiting for feedback', 'closed'),
+			attachment_id  INT,
+    		FOREIGN KEY (category_id) REFERENCES category(id),
+    		FOREIGN KEY (sub_category_id) REFERENCES sub_category(id),
+    		FOREIGN KEY (staff_id) REFERENCES staff(id),
+    		FOREIGN KEY (agent_id) REFERENCES agents(id),
+    		FOREIGN KEY (asset_id) REFERENCES assets(id),
+    		FOREIGN KEY (related_ticket_id) REFERENCES tickets(id),
+    		FOREIGN KEY (sla_id) REFERENCES sla(id),
+    		FOREIGN KEY (priority_id) REFERENCES priority(id),
+    		FOREIGN KEY (attachment_id) REFERENCES attachments(id)
         )`
 	_, err := db.Exec(query)
 	return err

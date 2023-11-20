@@ -42,8 +42,8 @@ func DeleteTicket(c *gin.Context) {
 */
 
 // List all tickets
+// List all tickets
 func ListTicketsOperation(c *gin.Context) ([]*structs.Ticket, error) {
-	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
@@ -70,53 +70,35 @@ func ListTicketsOperation(c *gin.Context) ([]*structs.Ticket, error) {
 }
 
 // Create a new ticket
-func CreateTicketOperation(c *gin.Context, ts string, td int, cat int, scat int, pr string, slaid int, staffid int, agentid int, due ItTime, assetid int, relatedTid int, tags string, siTe string, staTus string, attachment int) int {
-	// Don't forget type assertion when getting the connection from context.
+func CreateTicketOperation(c *gin.Context, t structs.Ticket) (*structs.Ticket, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return 0
+		return nil, fmt.Errorf("unable to reach db")
 	}
 
-	subject := ts
-	description := td
-	category := cat
-	subCategory := scat
-	priority := pr
-	sLA := slaid
-	staff := staffid
-	agent := agentid
-	dueAt := due
-	asset := assetid
-	relatedT := relatedTid
-	tag := tags
-	site := siTe
-	status := staTus
-	attachmentID := attachment
-
-	var t structs.Ticket
 	if err := c.ShouldBindJSON(&t); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return 0
+		return nil, fmt.Errorf("bad request")
 	}
 
-	result, err := db.Exec("INSERT INTO tickets (subject, description, category_id, sub_category_id, priority_id, sla_id, staff_id, agent_id, due_at, asset_id, related_ticket_id, tag, site, status, attachment_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", subject, description, category, subCategory, priority, sLA, staff, agent, dueAt, asset, relatedT, tag, site, status, attachmentID)
+	result, err := db.Exec("INSERT INTO tickets (subject, description, category_id, sub_category_id, priority_id, sla_id, staff_id, agent_id, due_at, asset_id, related_ticket_id, tag, site, status, attachment_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		t.Subject, t.Description, t.Category, t.SubCategory, t.Priority, t.SLA, t.StaffID, t.AgentID, t.DueAt, t.AssetID, t.RelatedTicketID, t.Tag, t.Site, t.Status, t.AttachmentID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return 0
+		return nil, fmt.Errorf("failed to create ticket")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
 	t.ID = int(lastInsertID)
 	c.JSON(http.StatusCreated, t)
-	return t.ID
+	return &t, nil
 }
 
 // Get a ticket by ID
 func GetTicketOperation(c *gin.Context, tid int) (*structs.Ticket, error) {
 	id := tid
 
-	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
@@ -125,7 +107,7 @@ func GetTicketOperation(c *gin.Context, tid int) (*structs.Ticket, error) {
 	rows, err := db.Query("SELECT * FROM tickets WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Ticket not found"})
-		return nil, err
+		return nil, fmt.Errorf("ticket not found")
 	}
 
 	for rows.Next() {
@@ -136,66 +118,58 @@ func GetTicketOperation(c *gin.Context, tid int) (*structs.Ticket, error) {
 }
 
 // Update a ticket by ID
-func UpdateTicketOperation(c *gin.Context, tid int, ts string, td int, cat int, scat int, pr string, slaid int, staffid int, agentid int, due ItTime, assetid int, relatedTid int, tags string, siTe string, staTus string, attachment int) int {
-	id := tid
-	subject := ts
-	description := td
-	category := cat
-	subCategory := scat
-	priority := pr
-	sLA := slaid
-	staff := staffid
-	agent := agentid
-	dueAt := due
-	asset := assetid
-	relatedT := relatedTid
-	tag := tags
-	site := siTe
-	status := staTus
-	attachmentID := attachment
+func UpdateTicketOperation(c *gin.Context, t structs.Ticket) (*structs.Ticket, error) {
+	id := t.ID
 
-	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return 0
-	}
-	var t structs.Ticket
-	if err := c.ShouldBindJSON(&t); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return 0
+		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	_, err := db.Exec("UPDATE tickets SET subject = ?, description = ?, category_id = ?, sub_category_id = ?, priority_id = ?, sla_id = ?, staff_id = ?, agent_id = ?, due_at = ?, asset_id = ?, related_ticket_id = ?, tag = ?, site = ?, status = ?, attachment_id = ? WHERE id = ?", subject, description, category, subCategory, priority, sLA, staff, agent, dueAt, asset, relatedT, tag, site, status, attachmentID, id)
+	if err := c.ShouldBindJSON(&t); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return nil, fmt.Errorf("bad request")
+	}
+
+	_, err := db.Exec("UPDATE tickets SET subject = ?, description = ?, category_id = ?, sub_category_id = ?, priority_id = ?, sla_id = ?, staff_id = ?, agent_id = ?, due_at = ?, asset_id = ?, related_ticket_id = ?, tag = ?, site = ?, status = ?, attachment_id = ? WHERE id = ?",
+		t.Subject, t.Description, t.Category, t.SubCategory, t.Priority, t.SLA, t.StaffID, t.AgentID, t.DueAt, t.AssetID, t.RelatedTicketID, t.Tag, t.Site, t.Status, t.AttachmentID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return 0
+		return nil, fmt.Errorf("failed to update ticket")
 	}
 	c.JSON(http.StatusOK, "Ticket updated successfully")
-	return t.ID
+	return &t, nil
 }
 
 // Delete a ticket by ID
-func DeleteTicketOperation(c *gin.Context, tid int) {
+func DeleteTicketOperation(c *gin.Context, tid int) (*string, error) {
 	id := tid
+	var status string
 
-	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, fmt.Errorf("unable to reach DB")
 	}
 	_, err := db.Exec("DELETE FROM tickets WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		status = "Ticket deletion failed"
+		return &status, err
 	}
-	c.JSON(http.StatusOK, "Ticket deleted successfully")
+	status = "Ticket deleted successfully"
+	return &status, nil
 }
 
+/*----------------------------------------------------------------------------------------------------------------------------------------*/
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*----------------------------------------------------------------------------------------------------------------------------------------*/
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*----------------------------------------------------------------------------------------------------------------------------------------*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*----------------------------------------------------------------------------------------------------------------------------------------*/
 
 // List all tickets
 func ListTickets(c *gin.Context) {
@@ -253,7 +227,7 @@ func CreateTicket(c *gin.Context) {
 }
 
 // Get a ticket by ID
-func GetTicket(c *gin.Context) {
+func GetTicket2(c *gin.Context) {
 	id := c.Param("id")
 
 	// Don't forget type assertion when getting the connection from context.
@@ -273,7 +247,7 @@ func GetTicket(c *gin.Context) {
 }
 
 // Get a ticket by ID
-func GetTicket2(c *gin.Context, tid int) (int, structs.Ticket) {
+func GetTicket(c *gin.Context, tid int) (int, structs.Ticket) {
 	id := tid
 	var t structs.Ticket
 

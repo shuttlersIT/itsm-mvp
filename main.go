@@ -96,7 +96,7 @@ func main() {
 		authorized.GET("/admin/itsm/ticketing", handlers.ItDeskAdminHandler)
 		authorized.GET("/admin/assets", handlers.AssetsAdminHandler)
 		authorized.GET("/admin/procurement", handlers.ProcurementAdminHandler)
-		authorized.GET(ticketRouter, handlers.GetTicket)
+		authorized.GET(ticketRouter, handlers.GetTicket2)
 		//authorized.GET("/ticketing/0/admin/work/:id", handlers.GetTicket)
 		//authorized.GET("/admin/ticketing/work", handlers.ListTickets)
 		//authorized.POST("/admin/ticketing/work", handlers.CreateTicket)
@@ -111,7 +111,7 @@ func main() {
 		authorized.GET("/itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
 		authorized.GET("/itsm/ticketing", handlers.ItDeskHandler)
 		authorized.GET("/itsm//testing", homeTest)
-		authorized.GET(ticketRouter, handlers.GetTicket)
+		authorized.GET(ticketRouter, handlers.GetTicket2)
 		//authorized.GET("itsm/ticketing/0/admin/work/:id", handlers.GetTicket)
 	}
 
@@ -213,7 +213,7 @@ func main() {
 		authorized1.GET("/admin/itsm/ticketing", handlers.ItDeskAdminHandler)
 		authorized1.GET("/admin/assets", handlers.AssetsAdminHandler)
 		authorized1.GET("/admin/procurement", handlers.ProcurementAdminHandler)
-		authorized1.GET(ticketRouter1, handlers.GetTicket)
+		authorized1.GET(ticketRouter1, handlers.GetTicket2)
 		//authorized.GET("/ticketing/0/admin/work/:id", handlers.GetTicket)
 		//authorized.GET("/admin/ticketing/work", handlers.ListTickets)
 		//authorized.POST("/admin/ticketing/work", handlers.CreateTicket)
@@ -228,7 +228,7 @@ func main() {
 		authorized1.GET("/itsm/ticketing/itportal", handlers.ItDeskPortalHandler)
 		authorized1.GET("/itsm/ticketing", handlers.ItDeskHandler)
 		authorized1.GET("/itsm//testing", homeTest)
-		authorized1.GET(ticketRouter1, handlers.GetTicket)
+		authorized1.GET(ticketRouter1, handlers.GetTicket2)
 		//authorized.GET("itsm/ticketing/0/admin/work/:id", handlers.GetTicket)
 	}
 

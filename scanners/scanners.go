@@ -178,8 +178,8 @@ func ScanIntoRole(rows *sql.Rows) (*structs.Role, error) {
 	return role, err
 }
 
-func ScanIntoCategories(rows *sql.Rows) (*structs.Categories, error) {
-	category := new(structs.Categories)
+func ScanIntoCategories(rows *sql.Rows) (*structs.Category, error) {
+	category := new(structs.Category)
 	err := rows.Scan(
 		&category.CategoryID,
 		&category.CategoryName,
@@ -188,8 +188,8 @@ func ScanIntoCategories(rows *sql.Rows) (*structs.Categories, error) {
 	return category, err
 }
 
-func ScanIntoSubCategories(rows *sql.Rows) (*structs.SubCategories, error) {
-	subCategory := new(structs.SubCategories)
+func ScanIntoSubCategories(rows *sql.Rows) (*structs.SubCategory, error) {
+	subCategory := new(structs.SubCategory)
 	err := rows.Scan(
 		&subCategory.SubCategoryID,
 		&subCategory.SubCategoryName,
