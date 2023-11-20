@@ -10,6 +10,7 @@ type Staff struct {
 	LastName     string    `json:"last_name"`
 	StaffEmail   string    `json:"staff_email"`
 	Username     int       `json:"username"`
+	Phone        int       `json:"phone"`
 	PositionID   int       `json:"position_id"`
 	DepartmentID int       `json:"department_id"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -22,6 +23,7 @@ type Agent struct {
 	LastName     string    `json:"last_name"`
 	AgentEmail   string    `json:"agent_email"`
 	Username     int       `json:"username"`
+	Phone        int       `json:"phone"`
 	RoleID       string    `json:"role_id"`
 	Unit         string    `json:"unit"`
 	SupervisorID int       `json:"supervisor_id"`
