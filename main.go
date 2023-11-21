@@ -253,6 +253,13 @@ func main() {
 	if err := router.Run(":5151"); err != nil {
 		log.Fatal(err)
 	}
+
+	// Example routes for creating entities
+	router.POST("/createStaff", handlers.CreateStaffHandler)
+	router.POST("/createAgent", handlers.CreateAgentHandler)
+	router.POST("/createStatus", handlers.CreateStatusHandler)
+	router.POST("/createAsset", handlers.CreateAssetHandler)
+
 }
 
 func homeTest(c *gin.Context) {
