@@ -223,14 +223,13 @@ func DeletePriority(c *gin.Context, priorityID int) (*string, error) {
 }
 
 // Create Priority
-func CreatePriority(c *gin.Context) (*structs.Priority, error) {
+func CreatePriority(c *gin.Context, priority structs.Priority) (*structs.Priority, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var priority structs.Priority
 	if err := c.ShouldBindJSON(&priority); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("invalid request")
@@ -238,15 +237,21 @@ func CreatePriority(c *gin.Context) (*structs.Priority, error) {
 	result, err := db.Exec("INSERT INTO priority (priority_name, first_response, colour) VALUES (?, ?, ?)", priority.Name, priority.FirstResponse, priority.Colour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return nil, fmt.Errorf("failed to create priority")
+		return nil, fmt.Errorf("failed to create new priority")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	priority.PriorityID = int(lastInsertID)
-	c.JSON(http.StatusCreated, priority)
+	newID := int(lastInsertID)
+	newPriority, err := GetPriority(c, newID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return nil, fmt.Errorf("failed to retrieve new priority from db")
+	}
+
+	//c.JSON(http.StatusCreated, newPriority)
 
 	c.JSON(http.StatusOK, "Priority created successfully")
-	return &priority, nil
+	return newPriority, nil
 }
 
 // List all Priority Ranks
@@ -1394,11 +1399,17 @@ func CreateStatus(c *gin.Context, statusName string) (*structs.Status, error) {
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	status.StatusID = int(lastInsertID)
-	c.JSON(http.StatusCreated, status)
+	newID := int(lastInsertID)
+	newStatus, err := GetStatus(c, newID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return nil, fmt.Errorf("failed to retrieve new status from db")
+	}
+
+	c.JSON(http.StatusCreated, newStatus)
 
 	c.JSON(http.StatusOK, "Status created successfully")
-	return &status, nil
+	return newStatus, nil
 }
 
 // List all Status

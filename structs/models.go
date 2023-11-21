@@ -37,7 +37,7 @@ type Ticket struct {
 	Description     string    `json:"description"`
 	Category        int       `json:"category"`
 	SubCategory     int       `json:"sub_category"`
-	Priority        string    `json:"priority"`
+	Priority        int       `json:"priority"`
 	SLA             int       `json:"sla"`
 	StaffID         int       `json:"staff_id"`
 	AgentID         int       `json:"agent_id"`
@@ -46,9 +46,9 @@ type Ticket struct {
 	DueAt           time.Time `json:"due_at"`
 	AssetID         int       `json:"asset_id"`
 	RelatedTicketID int       `json:"related_ticket_id"`
-	Tag             string    `json:"tag"`
-	Site            string    `json:"site"`
-	Status          string    `json:"status"`
+	Tag             int       `json:"tag"`
+	Site            int       `json:"site"`
+	Status          int       `json:"status"`
 	AttachmentID    int       `json:"attachment"`
 }
 

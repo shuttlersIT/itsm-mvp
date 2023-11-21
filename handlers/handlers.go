@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -88,11 +90,26 @@ func CreateStaffHandler(c *gin.Context) {
 
 // CreateTicket function Usage
 func CreateTicketHandler(c *gin.Context) {
-	// Get the status name from the request JSON or other sources
-	statusName := c.PostForm("statusName")
+	var t structs.Ticket
+	// Get the ticket details name from the request JSON or other sources
+	t.Subject = c.PostForm("ticketSubject")
+	t.Description = c.PostForm("ticketDescription")
+	t.Category, _ = strconv.Atoi(c.PostForm("ticketCategory"))
+	t.SubCategory, _ = strconv.Atoi(c.PostForm("ticketSubSubject"))
+	t.Priority, _ = strconv.Atoi(c.PostForm("ticketPriority"))
+	t.SLA, _ = strconv.Atoi(c.PostForm("ticketSla"))
+	t.StaffID, _ = strconv.Atoi(c.PostForm("ticketStaffID"))
+	t.AgentID, _ = strconv.Atoi(c.PostForm("ticketAgentID"))
+	t.DueAt, _ = time.Parse("02-01-2006", c.PostForm("ticketDueDate"))
+	t.AssetID, _ = strconv.Atoi(c.PostForm("ticketAssetID"))
+	t.RelatedTicketID, _ = strconv.Atoi(c.PostForm("ticketRelatedTicket"))
+	t.Tag, _ = strconv.Atoi(c.PostForm("ticketTag"))
+	t.Site, _ = strconv.Atoi(c.PostForm("ticketSite"))
+	t.Status, _ = strconv.Atoi(c.PostForm("ticketStatus"))
+	t.AttachmentID, _ = strconv.Atoi(c.PostForm("ticketAttachmentID"))
 
 	// Call the CreateStatus function
-	createdStatus, err := CreateStatus(c, statusName)
+	createdTicket, err := CreateTicket(c, t)
 	if err != nil {
 		// Handle the error, e.g., return an error response
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -101,8 +118,8 @@ func CreateTicketHandler(c *gin.Context) {
 
 	// Return a success response with the created status
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "Status created successfully",
-		"createdStatus": createdStatus,
+		"message":       "Ticket created successfully",
+		"createdStatus": createdTicket,
 	})
 }
 
@@ -142,7 +159,19 @@ func CreateStatusHandler(c *gin.Context) {
 func CreateAssetHandler(c *gin.Context) {
 	var a structs.Asset
 	// Get asset details from the request JSON or other sources
+	a.AssetID, _ = strconv.Atoi(c.PostForm("assetID"))
+	a.AssetType = c.PostForm("assetType")
 	a.AssetName = c.PostForm("assetName")
+	a.Description = c.PostForm("assetDescription")
+	a.Manufacturer = c.PostForm("assetManufacturer")
+	a.Model = c.PostForm("assetModel")
+	a.SerialNumber = c.PostForm("assetSerialNumber")
+	a.PurchaseDate = c.PostForm("assetPurchaseDate")
+	a.PurchasePrice = c.PostForm("assetPurchasePrice")
+	a.Vendor = c.PostForm("assetVendor")
+	a.Site = c.PostForm("assetSite")
+	a.Status = c.PostForm("assetStatus")
+	//session.Get("agent-id") = c.PostForm("assetName")
 	// ...
 
 	// Call the CreateAsset function
@@ -168,11 +197,13 @@ func CreateAssetHandler(c *gin.Context) {
 
 // CreateDepartment function Usage
 func CreateDepartmentHandler(c *gin.Context) {
+	var d structs.Department
 	// Get the status name from the request JSON or other sources
-	statusName := c.PostForm("statusName")
+	d.DepartmentName = c.PostForm("newDepartmentName")
+	d.Emoji = c.PostForm("newDepartmentEmoji")
 
 	// Call the CreateStatus function
-	createdStatus, err := CreateStatus(c, statusName)
+	createdDepartment, err := CreateDepartment(c, d.DepartmentName, d.Emoji)
 	if err != nil {
 		// Handle the error, e.g., return an error response
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -181,8 +212,8 @@ func CreateDepartmentHandler(c *gin.Context) {
 
 	// Return a success response with the created status
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "Status created successfully",
-		"createdStatus": createdStatus,
+		"message":       "Department created successfully",
+		"createdStatus": createdDepartment,
 	})
 }
 
@@ -194,21 +225,25 @@ func CreateDepartmentHandler(c *gin.Context) {
 
 // CreatePriority function Usage
 func CreatePriorityHandler(c *gin.Context) {
-	// Get the status name from the request JSON or other sources
-	statusName := c.PostForm("statusName")
+	var p structs.Priority
 
-	// Call the CreateStatus function
-	createdStatus, err := CreateStatus(c, statusName)
+	// Get the priority name from the request JSON or other sources
+	p.Name = c.PostForm("priorityName")
+	p.Colour = c.PostForm("priorityColour")
+	p.FirstResponse, _ = strconv.Atoi(c.PostForm("priorityFirstResponse"))
+
+	// Call the Createpriority function
+	createdPriority, err := CreatePriority(c, p)
 	if err != nil {
 		// Handle the error, e.g., return an error response
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return a success response with the created status
+	// Return a success response with the created priority
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "Status created successfully",
-		"createdStatus": createdStatus,
+		"message":       "Priority created successfully",
+		"createdStatus": createdPriority,
 	})
 }
 
@@ -220,20 +255,23 @@ func CreatePriorityHandler(c *gin.Context) {
 
 // CreatePosition function Usage
 func CreatePositionHandler(c *gin.Context) {
-	// Get the status name from the request JSON or other sources
-	statusName := c.PostForm("statusName")
+	var p structs.Position
 
-	// Call the CreateStatus function
-	createdStatus, err := CreateStatus(c, statusName)
+	// Get the position name from the request JSON or other sources
+	p.PositionName = c.PostForm("positionName")
+	p.CadreName = c.PostForm("positionName")
+
+	// Call the CreatePosition function
+	createdPosition, err := CreatePosition(c, p.PositionName, p.CadreName)
 	if err != nil {
 		// Handle the error, e.g., return an error response
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return a success response with the created status
+	// Return a success response with the created position
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "Status created successfully",
-		"createdStatus": createdStatus,
+		"message":       "Priority created successfully",
+		"createdStatus": createdPosition,
 	})
 }

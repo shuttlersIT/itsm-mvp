@@ -201,29 +201,30 @@ func ListTickets(c *gin.Context) {
 }
 
 // Create a new ticket
-func CreateTicket(c *gin.Context) {
+func CreateTicket(c *gin.Context, t structs.Ticket) (*structs.Ticket, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, fmt.Errorf("unable to reach db")
 	}
 
-	var t structs.Ticket
 	if err := c.ShouldBindJSON(&t); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return nil, fmt.Errorf("bad request")
 	}
 
-	result, err := db.Exec("INSERT INTO tickets (title, description, status) VALUES (?, ?, ?)", t.Subject, t.Description, t.Status)
+	result, err := db.Exec("INSERT INTO tickets (subject, description, category_id, sub_category_id, priority_id, sla_id, staff_id, agent_id, due_at, asset_id, related_ticket_id, tag, site, status, attachment_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		t.Subject, t.Description, t.Category, t.SubCategory, t.Priority, t.SLA, t.StaffID, t.AgentID, t.DueAt, t.AssetID, t.RelatedTicketID, t.Tag, t.Site, t.Status, t.AttachmentID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, fmt.Errorf("failed to create ticket")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
 	t.ID = int(lastInsertID)
 	c.JSON(http.StatusCreated, t)
+	return &t, nil
 }
 
 // Get a ticket by ID
