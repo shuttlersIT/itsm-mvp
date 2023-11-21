@@ -626,6 +626,10 @@ func DeletePosition(c *gin.Context, positionID int) (*string, error) {
 
 // Create position
 func CreatePosition(c *gin.Context, positionName string, cadreName string) (*structs.Position, error) {
+	var position structs.Position
+	position.PositionName = positionName
+	position.CadreName = cadreName
+
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -633,24 +637,28 @@ func CreatePosition(c *gin.Context, positionName string, cadreName string) (*str
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var position structs.Position
 	if err := c.ShouldBindJSON(&position); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("invalid request data")
 	}
-	result, err := db.Exec("INSERT INTO positions (position_name, cadre_name) VALUES (?, ?)", positionName, cadreName)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return nil, fmt.Errorf("failed to create position")
+	result, erro := db.Exec("INSERT INTO positions (position_name, cadre_name) VALUES (?, ?)", positionName, cadreName)
+	if erro != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": erro.Error()})
+		return nil, fmt.Errorf("unable to Add New Position")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	position.PositionID = int(lastInsertID)
-	c.JSON(http.StatusCreated, position)
+	newID := int(lastInsertID)
+	newPosition, err := GetPosition(c, newID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return nil, fmt.Errorf("failed to retrieve new position from db")
+	}
+
+	//c.JSON(http.StatusCreated, newPosition)
 
 	c.JSON(http.StatusOK, "Position created successfully")
-
-	return &position, nil
+	return newPosition, nil
 }
 
 // List all positions
