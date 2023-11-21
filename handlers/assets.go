@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/contrib/sessions"
@@ -41,44 +42,48 @@ func ListAssets(c *gin.Context) {
 }
 
 // Create a new asset
-func CreateAsset(c *gin.Context, aid int, atype string, aname string, desc string, man string, mod string, snum string, purch ItTime, price int, ven string, sit string, statu string) {
+func CreateAsset(c *gin.Context, a structs.Asset) (*structs.Asset, int, error) {
 	session := sessions.Default(c)
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, 0, fmt.Errorf("db unreacheable")
 	}
-	assetID := aid
-	assetType := atype
-	assetName := aname
-	description := desc
-	manufacturer := man
-	model := mod
-	serialNumber := snum
-	purchaseDate := purch
-	purchasePrice := price
-	vendor := ven
-	site := sit
-	status := statu
+	//assetID := a.ID
+	assetnum := a.AssetID
+	assetType := a.AssetType
+	assetName := a.AssetName
+	description := a.Description
+	manufacturer := a.Manufacturer
+	model := a.Model
+	serialNumber := a.SerialNumber
+	purchaseDate := a.PurchaseDate
+	purchasePrice := a.PurchasePrice
+	vendor := a.Vendor
+	site := a.Site
+	status := a.Status
 	agent := session.Get("agent-id")
 
 	var t structs.Asset
 	if err := c.ShouldBindJSON(&t); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return nil, 0, fmt.Errorf("asset failed json bind")
 	}
 
-	result, err := db.Exec("INSERT INTO assets (asset_id, asset_type, asset_name, description, manufacturer, model, serial_number, purchase_date, purchase_price, vendor, site, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", assetID, assetType, assetName, description, manufacturer, model, serialNumber, purchaseDate, purchasePrice, vendor, site, status, agent)
+	result, err := db.Exec("INSERT INTO assets (asset_id, asset_type, asset_name, description, manufacturer, model, serial_number, purchase_date, purchase_price, vendor, site, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", assetnum, assetType, assetName, description, manufacturer, model, serialNumber, purchaseDate, purchasePrice, vendor, site, status, agent)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, 0, fmt.Errorf("asset Creation failed")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
 	t.ID = int(lastInsertID)
 	c.JSON(http.StatusCreated, t)
+
+	c.JSON(http.StatusOK, "User created successfully")
+	return &t, t.ID, nil
 }
 
 // Get a asset by ID

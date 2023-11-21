@@ -29,7 +29,7 @@ func getAgentID(e string, c *gin.Context) (int, string) {
 	err := db.QueryRow("SELECT id FROM agent WHERE email = ?", email).
 		Scan(&id)
 	if err != nil {
-		id = CreateUser(c)
+		_, id, _ = CreateUser(c)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Agent email not found in our records"})
 		return id, email
 	}

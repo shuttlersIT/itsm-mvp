@@ -53,7 +53,7 @@ func getID(e string, c *gin.Context) (int, string) {
 	err := db.QueryRow("SELECT id FROM staff WHERE email = ?", email).
 		Scan(&id)
 	if err != nil {
-		id = CreateUser(c)
+		_, id, _ = CreateUser(c)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Staff email not found in our records"})
 		return id, email
 	}

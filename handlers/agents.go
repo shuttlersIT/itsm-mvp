@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/contrib/sessions"
@@ -104,4 +105,55 @@ func ListAgentsHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, agents)
+}
+
+// Create staff
+func CreateAgent(c *gin.Context) (*structs.Agent, int, error) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
+		return nil, 0, fmt.Errorf("db unreacheable")
+	}
+
+	session := sessions.Default(c)
+	email := session.Get("user-email")
+	username := session.Get("user-name")
+	first_name := session.Get("user-firstName")
+	last_name := session.Get("user-lastName")
+	//sub := session.Get("user-sub")
+
+	var agent structs.Agent
+	if err := c.ShouldBindJSON(&agent); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return nil, 0, fmt.Errorf("invalid request")
+	}
+
+	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username_id) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return nil, 0, fmt.Errorf("failed to create staff")
+	}
+
+	lastInsertID, _ := result.LastInsertId()
+	agent.AgentID = int(lastInsertID)
+	c.JSON(http.StatusCreated, agent)
+
+	c.JSON(http.StatusOK, "User created successfully")
+	return &agent, agent.AgentID, nil
+
+	/*
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return nil, fmt.Errorf("Add Staff failed not found")
+		}
+
+		//lastInsertID, _ := result.LastInsertId()
+		s = int(lastInsertID)
+		c.JSON(http.StatusCreated, s)
+
+		c.JSON(http.StatusOK, "User created successfully")
+
+		return s.StaffID
+	*/
 }
