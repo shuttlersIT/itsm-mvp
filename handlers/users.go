@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/shuttlersIT/itsm-mvp/scanners"
 	"github.com/shuttlersIT/itsm-mvp/structs"
 )
 
@@ -34,28 +35,30 @@ func GetUser(c *gin.Context) {
 }
 
 // Get a user ID from database
-func GetUserByID(c *gin.Context, id int) structs.Staff {
-	var s structs.Staff
-
+func GetUserByID(c *gin.Context, id int) (*structs.Staff, error) {
+	//var s structs.Staff
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return s
+		return nil, fmt.Errorf("db unreacheable")
 	}
 
-	//session := sessions.Default(c)
-	//id := session.Get("user-id")
-
-	err := db.QueryRow("SELECT id, first_name, last_name, staff_email, username_id, position_id, department_id FROM staff WHERE id = ?", id).
-		Scan(&s.StaffID, &s.FirstName, &s.LastName, &s.StaffEmail, &s.Username, &s.PositionID, &s.DepartmentID)
+	rows, err := db.Query("SELECT * FROM agents WHERE id = ?", id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
-		return s
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return nil, err
 	}
-	c.JSON(http.StatusOK, s)
-
-	return s
+	for rows.Next() {
+		s, e := scanners.ScanIntoStaff(rows)
+		if e != nil {
+			c.JSON(http.StatusNotFound, "an error occured when getting staff from db")
+			return nil, e
+		}
+		c.JSON(http.StatusOK, "staff retrieval successfull")
+		return s, nil
+	}
+	return nil, fmt.Errorf("staff %d not found", id)
 }
 
 // Get a user ID from database
@@ -154,7 +157,7 @@ func DeleteUser(c *gin.Context) {
 }
 
 // Create staff
-func CreateUser(c *gin.Context) (*structs.Staff, int, error) {
+func CreateUser2(c *gin.Context, staff structs.Staff) (*structs.Staff, int, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -162,31 +165,33 @@ func CreateUser(c *gin.Context) (*structs.Staff, int, error) {
 		return nil, 0, fmt.Errorf("db unreacheable")
 	}
 
-	session := sessions.Default(c)
-	email := session.Get("user-email")
-	username := session.Get("user-name")
-	first_name := session.Get("user-firstName")
-	last_name := session.Get("user-lastName")
+	//session := sessions.Default(c)
+	//email := session.Get("user-email")
+	//username := session.Get("user-name")
+	//first_name := session.Get("user-firstName")
+	//last_name := session.Get("user-lastName")
 	//sub := session.Get("user-sub")
 
-	var staff structs.Staff
 	if err := c.ShouldBindJSON(&staff); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, 0, fmt.Errorf("invalid request")
 	}
 
-	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, username_id) VALUES (?, ?, ?, ?)", first_name, last_name, email, username)
+	result, err := db.Exec("INSERT INTO staff (first_name, last_name, staff_email, phone, username_id, position_id, department_id) VALUES (?, ?, ?, ?, ?, ?, ?)", staff.FirstName, staff.LastName, staff.StaffEmail, staff.Phone, staff.Username, staff.PositionID, staff.DepartmentID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, 0, fmt.Errorf("failed to create staff")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	staff.StaffID = int(lastInsertID)
-	c.JSON(http.StatusCreated, staff)
-
-	c.JSON(http.StatusOK, "User created successfully")
-	return &staff, staff.StaffID, nil
+	st, e := GetUserByID(c, int(lastInsertID))
+	if e != nil {
+		c.JSON(http.StatusNotFound, "Staff creation failed")
+		return nil, 0, e
+	}
+	c.JSON(http.StatusCreated, st)
+	c.JSON(http.StatusOK, "Staff created successfully")
+	return st, st.StaffID, nil
 
 	/*
 		if err != nil {

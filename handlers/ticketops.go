@@ -86,30 +86,33 @@ func DeleteSla(c *gin.Context, slaID int) (*string, error) {
 }
 
 // Create SLA
-func CreateSla(c *gin.Context) (*structs.Sla, error) {
+func CreateSla(c *gin.Context, s structs.Sla) (*structs.Sla, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var sla structs.Sla
-	if err := c.ShouldBindJSON(&sla); err != nil {
+	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("invalid request")
 	}
-	result, err := db.Exec("INSERT INTO sla (sla_name, priority_id, satisfaction_id, policy_id) VALUES (?, ?, ?, ?)", sla.SlaName, sla.PriorityID, sla.SatisfactionID, sla.PolicyID)
+	result, err := db.Exec("INSERT INTO sla (sla_name, priority_id, satisfaction_id, policy_id) VALUES (?, ?, ?, ?)", s.SlaName, s.PriorityID, s.SatisfactionID, s.PolicyID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("failed to create SLA")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	sla.SlaID = int(lastInsertID)
-	c.JSON(http.StatusCreated, sla)
+	sla, e := GetSla(c, int(lastInsertID))
+	if e != nil {
+		c.JSON(http.StatusNotFound, "SLA creation failed")
+		return nil, e
+	}
 
+	c.JSON(http.StatusCreated, sla)
 	c.JSON(http.StatusOK, "SLA created successfully")
-	return &sla, nil
+	return sla, nil
 }
 
 // List all SLAs
@@ -366,7 +369,7 @@ func UpdateSatisfaction(c *gin.Context, satisfactionID int, satisfactionName str
 }
 
 // Create Satisfaction Rank
-func CreateSatisfaction(c *gin.Context, satisfactionName string, rank int, emoji string) (*structs.Satisfaction, error) {
+func CreateSatisfaction(c *gin.Context, satisfaction structs.Satisfaction) (*structs.Satisfaction, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -374,24 +377,27 @@ func CreateSatisfaction(c *gin.Context, satisfactionName string, rank int, emoji
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var satisfaction structs.Satisfaction
 	if err := c.ShouldBindJSON(&satisfaction); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("invalid request")
 	}
-	result, err := db.Exec("INSERT INTO satisfaction (satisfaction_name, rank, emoji) VALUES (?, ?, ?)", satisfactionName, rank, emoji)
+	result, err := db.Exec("INSERT INTO satisfaction (satisfaction_name, rank, emoji) VALUES (?, ?, ?)", satisfaction.Name, satisfaction.Rank, satisfaction.Emoji)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("failed to create satisfaction")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	satisfaction.SatisfactionID = int(lastInsertID)
-	c.JSON(http.StatusCreated, satisfaction)
+	s, e := GetSatisfaction(c, int(lastInsertID))
+	if e != nil {
+		c.JSON(http.StatusNotFound, "Create Fatisfaction failed")
+		return nil, e
+	}
+	c.JSON(http.StatusCreated, s)
 
 	c.JSON(http.StatusOK, "Satisfaction created successfully")
 
-	return &satisfaction, nil
+	return s, nil
 }
 
 // List all Satisfaction Ranks
@@ -500,30 +506,32 @@ func DeletePolicy(c *gin.Context, policyID int) (*string, error) {
 }
 
 // Create policy
-func CreatePolicy(c *gin.Context, policyName string, embeddedLink string, policyUrl string) (*structs.Policies, error) {
+func CreatePolicy(c *gin.Context, policy structs.Policies) (*structs.Policies, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from create policy handler"})
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var policy structs.Policies
 	if err := c.ShouldBindJSON(&policy); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("bad request")
 	}
-	result, err := db.Exec("INSERT INTO policy (policy_name, embedded_link, policy_url) VALUES (?, ?, ?)", policyName, embeddedLink, policyUrl)
+	result, err := db.Exec("INSERT INTO policy (policy_name, embedded_link, policy_url) VALUES (?, ?, ?)", policy.PolicyName, policy.EmbeddedLink, policy.PolicyUrl)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("failed to create policy")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	policy.PolicyID = int(lastInsertID)
-	c.JSON(http.StatusCreated, policy)
-
+	p, e := GetPolicy(c, int(lastInsertID))
+	if e != nil {
+		c.JSON(http.StatusNotFound, "Policy retrieval failed")
+		return nil, e
+	}
+	c.JSON(http.StatusCreated, p)
 	c.JSON(http.StatusOK, "Policy created successfully")
-	return &policy, nil
+	return p, nil
 }
 
 // List all policies
@@ -625,11 +633,7 @@ func DeletePosition(c *gin.Context, positionID int) (*string, error) {
 }
 
 // Create position
-func CreatePosition(c *gin.Context, positionName string, cadreName string) (*structs.Position, error) {
-	var position structs.Position
-	position.PositionName = positionName
-	position.CadreName = cadreName
-
+func CreatePosition(c *gin.Context, position structs.Position) (*structs.Position, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -641,7 +645,7 @@ func CreatePosition(c *gin.Context, positionName string, cadreName string) (*str
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("invalid request data")
 	}
-	result, erro := db.Exec("INSERT INTO positions (position_name, cadre_name) VALUES (?, ?)", positionName, cadreName)
+	result, erro := db.Exec("INSERT INTO positions (position_name, cadre_name) VALUES (?, ?)", position.PositionName, position.CadreName)
 	if erro != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": erro.Error()})
 		return nil, fmt.Errorf("unable to Add New Position")
@@ -761,7 +765,7 @@ func DeleteDepartment(c *gin.Context, departmentID int) (*string, error) {
 }
 
 // Create department
-func CreateDepartment(c *gin.Context, departmentName string, emoji string) (*structs.Department, error) {
+func CreateDepartment(c *gin.Context, department structs.Department) (*structs.Department, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -769,23 +773,25 @@ func CreateDepartment(c *gin.Context, departmentName string, emoji string) (*str
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var department structs.Department
 	if err := c.ShouldBindJSON(&department); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("bad request")
 	}
-	result, err := db.Exec("INSERT INTO departments (department_name, emoji) VALUES (?, ?)", departmentName, emoji)
+	result, err := db.Exec("INSERT INTO departments (department_name, emoji) VALUES (?, ?)", department.DepartmentName, department.Emoji)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("failed to create department")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	department.DepartmentID = int(lastInsertID)
-	c.JSON(http.StatusCreated, department)
-
+	d, e := GetDepartment(c, int(lastInsertID))
+	if e != nil {
+		c.JSON(http.StatusNotFound, "Department creation failed")
+		return nil, e
+	}
+	c.JSON(http.StatusCreated, d)
 	c.JSON(http.StatusOK, "Department created successfully")
-	return &department, nil
+	return d, nil
 }
 
 // List all departments
@@ -888,7 +894,7 @@ func DeleteUnit(c *gin.Context, unitID int) (*string, error) {
 }
 
 // Create unit
-func CreateUnit(c *gin.Context, unitName string, emoji string) (*structs.Unit, error) {
+func CreateUnit(c *gin.Context, unit structs.Unit) (*structs.Unit, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -896,24 +902,25 @@ func CreateUnit(c *gin.Context, unitName string, emoji string) (*structs.Unit, e
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var unit structs.Unit
 	if err := c.ShouldBindJSON(&unit); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("invalid request data")
 	}
-	result, err := db.Exec("INSERT INTO units (unit_name, emoji) VALUES (?, ?)", unitName, emoji)
+	result, err := db.Exec("INSERT INTO units (unit_name, emoji) VALUES (?, ?)", unit.UnitName, unit.Emoji)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("failed to create unit")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	unit.UnitID = int(lastInsertID)
-	c.JSON(http.StatusCreated, unit)
-
+	u, e := GetUnit(c, int(lastInsertID))
+	if e != nil {
+		c.JSON(http.StatusNotFound, "Unit created successfully")
+		return nil, e
+	}
+	c.JSON(http.StatusCreated, u)
 	c.JSON(http.StatusOK, "Unit created successfully")
-
-	return &unit, nil
+	return u, nil
 }
 
 // List all units
@@ -1015,7 +1022,7 @@ func DeleteRole(c *gin.Context, roleID int) (*string, error) {
 }
 
 // Create Role
-func CreateRole(c *gin.Context, roleName string) (*structs.Role, error) {
+func CreateRole(c *gin.Context, role structs.Role) (*structs.Role, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1023,23 +1030,26 @@ func CreateRole(c *gin.Context, roleName string) (*structs.Role, error) {
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var role structs.Role
 	if err := c.ShouldBindJSON(&role); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("bad request")
 	}
-	result, err := db.Exec("INSERT INTO roles (role_name) VALUES (?)", roleName)
+	result, err := db.Exec("INSERT INTO roles (role_name) VALUES (?)", role.RoleName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("failed to create role")
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	role.RoleID = int(lastInsertID)
-	c.JSON(http.StatusCreated, role)
+	r, e := GetRole(c, int(lastInsertID))
+	if e != nil {
+		c.JSON(http.StatusNotFound, "Role creation failed")
+		return nil, e
+	}
 
+	c.JSON(http.StatusCreated, r)
 	c.JSON(http.StatusOK, "Role created successfully")
-	return &role, nil
+	return r, nil
 }
 
 // List all roles
@@ -1140,7 +1150,7 @@ func DeleteCategory(c *gin.Context, cid int) (*string, error) {
 }
 
 // Create category
-func CreateCategory(c *gin.Context) (*structs.Category, error) {
+func CreateCategory(c *gin.Context, category structs.Category) (*structs.Category, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1148,7 +1158,6 @@ func CreateCategory(c *gin.Context) (*structs.Category, error) {
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var category structs.Category
 	if err := c.ShouldBindJSON(&category); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("invalid request")
@@ -1160,11 +1169,14 @@ func CreateCategory(c *gin.Context) (*structs.Category, error) {
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	category.CategoryID = int(lastInsertID)
-	c.JSON(http.StatusCreated, category)
-
+	cat, e := GetCategory(c, int(lastInsertID))
+	if e != nil {
+		c.JSON(http.StatusNotFound, "Category creation failed")
+		return nil, e
+	}
+	c.JSON(http.StatusCreated, cat)
 	c.JSON(http.StatusOK, "Category created successfully")
-	return &category, nil
+	return cat, nil
 }
 
 // List all categories
@@ -1265,7 +1277,7 @@ func DeleteSubCategory(c *gin.Context, scid int) (*string, error) {
 }
 
 // Create Subcategory
-func CreateSubCategory(c *gin.Context, subCategoryName string, categoryID int) (*structs.SubCategory, error) {
+func CreateSubCategory(c *gin.Context, subCategory structs.SubCategory) (*structs.SubCategory, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -1273,9 +1285,10 @@ func CreateSubCategory(c *gin.Context, subCategoryName string, categoryID int) (
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	var subCategory structs.SubCategory
-	subCategory.SubCategoryName = subCategoryName
-	subCategory.CategoryID = categoryID
+	if err := c.ShouldBindJSON(&subCategory); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return nil, fmt.Errorf("invalid request")
+	}
 
 	result, err := db.Exec("INSERT INTO sub_category (sub_category_name, category_id) VALUES (?, ?)", subCategory.SubCategoryName, subCategory.CategoryID)
 	if err != nil {
@@ -1284,11 +1297,14 @@ func CreateSubCategory(c *gin.Context, subCategoryName string, categoryID int) (
 	}
 
 	lastInsertID, _ := result.LastInsertId()
-	subCategory.SubCategoryID = int(lastInsertID)
-	c.JSON(http.StatusCreated, subCategory)
-
+	subC, e := GetSubCategory(c, int(lastInsertID))
+	if e != nil {
+		c.JSON(http.StatusNotFound, "Sub-Category creation failed")
+		return nil, e
+	}
+	c.JSON(http.StatusCreated, subC)
 	c.JSON(http.StatusOK, "Sub-Category created successfully")
-	return &subCategory, nil
+	return subC, nil
 }
 
 // List all SubCategories

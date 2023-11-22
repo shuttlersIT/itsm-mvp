@@ -37,20 +37,23 @@ func CreateExamplerHandler(c *gin.Context) {
 /*!-----------------------------------------------------------------------------------------------------------------------------------!*/
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Example route handler for creating agent
 func CreateAgentHandler(c *gin.Context) {
-	// Get agent details from the request JSON or other sources
-	// ...
+	var a structs.Agent
+	a.FirstName = c.PostForm("firstName")
+	a.LastName = c.PostForm("lastName")
+	a.AgentEmail = c.PostForm("agentEmail")
+	a.Username, _ = strconv.Atoi(c.PostForm("username"))
+	a.Phone, _ = strconv.Atoi(c.PostForm("phone"))
+	a.RoleID = c.PostForm("roleID")
+	a.Unit = c.PostForm("unit")
+	a.SupervisorID, _ = strconv.Atoi(c.PostForm("supervisorID"))
 
-	// Call the CreateAgent function
-	createdAgent, _, err := CreateAgent(c /* pass agent details */)
+	createdAgent, _, err := CreateAgent(c, a)
 	if err != nil {
-		// Handle the error, e.g., return an error response
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return a success response with the created agent
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Agent created successfully",
 		"createdAgent": createdAgent,
@@ -64,18 +67,21 @@ func CreateAgentHandler(c *gin.Context) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func CreateStaffHandler(c *gin.Context) {
-	// Get staff details from the request JSON or other sources
-	// ...
+	var s structs.Staff
+	s.FirstName = c.PostForm("firstName")
+	s.LastName = c.PostForm("lastName")
+	s.StaffEmail = c.PostForm("staffEmail")
+	s.Username, _ = strconv.Atoi(c.PostForm("username"))
+	s.Phone, _ = strconv.Atoi(c.PostForm("phone"))
+	s.PositionID, _ = strconv.Atoi(c.PostForm("positionID"))
+	s.DepartmentID, _ = strconv.Atoi(c.PostForm("departmentID"))
 
-	// Call the CreateStaff function
-	createdStaff, _, err := CreateUser(c /* pass staff details */)
+	createdStaff, _, err := CreateUser2(c, s)
 	if err != nil {
-		// Handle the error, e.g., return an error response
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return a success response with the created staff
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Staff created successfully",
 		"createdStaff": createdStaff,
@@ -195,25 +201,20 @@ func CreateAssetHandler(c *gin.Context) {
 /*!-----------------------------------------------------------------------------------------------------------------------------------!*/
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// CreateDepartment function Usage
 func CreateDepartmentHandler(c *gin.Context) {
-	var d structs.Department
-	// Get the status name from the request JSON or other sources
-	d.DepartmentName = c.PostForm("newDepartmentName")
-	d.Emoji = c.PostForm("newDepartmentEmoji")
+	var dep structs.Department
+	dep.DepartmentName = c.PostForm("departmentName")
+	dep.Emoji = c.PostForm("emoji")
 
-	// Call the CreateStatus function
-	createdDepartment, err := CreateDepartment(c, d.DepartmentName, d.Emoji)
+	createdDepartment, err := CreateDepartment(c, dep)
 	if err != nil {
-		// Handle the error, e.g., return an error response
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return a success response with the created status
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "Department created successfully",
-		"createdStatus": createdDepartment,
+		"message":           "Department created successfully",
+		"createdDepartment": createdDepartment,
 	})
 }
 
@@ -223,27 +224,21 @@ func CreateDepartmentHandler(c *gin.Context) {
 /*!-----------------------------------------------------------------------------------------------------------------------------------!*/
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// CreatePriority function Usage
 func CreatePriorityHandler(c *gin.Context) {
 	var p structs.Priority
-
-	// Get the priority name from the request JSON or other sources
 	p.Name = c.PostForm("priorityName")
-	p.Colour = c.PostForm("priorityColour")
-	p.FirstResponse, _ = strconv.Atoi(c.PostForm("priorityFirstResponse"))
+	p.FirstResponse, _ = strconv.Atoi(c.PostForm("firstResponse"))
+	p.Colour = c.PostForm("colour")
 
-	// Call the Createpriority function
 	createdPriority, err := CreatePriority(c, p)
 	if err != nil {
-		// Handle the error, e.g., return an error response
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return a success response with the created priority
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "Priority created successfully",
-		"createdStatus": createdPriority,
+		"message":         "Priority created successfully",
+		"createdPriority": createdPriority,
 	})
 }
 
@@ -253,25 +248,176 @@ func CreatePriorityHandler(c *gin.Context) {
 /*!-----------------------------------------------------------------------------------------------------------------------------------!*/
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// CreatePosition function Usage
 func CreatePositionHandler(c *gin.Context) {
-	var p structs.Position
+	var pos structs.Position
+	pos.PositionName = c.PostForm("positionName")
+	pos.CadreName = c.PostForm("cadreName")
 
-	// Get the position name from the request JSON or other sources
-	p.PositionName = c.PostForm("positionName")
-	p.CadreName = c.PostForm("positionName")
-
-	// Call the CreatePosition function
-	createdPosition, err := CreatePosition(c, p.PositionName, p.CadreName)
+	createdPosition, err := CreatePosition(c, pos)
 	if err != nil {
-		// Handle the error, e.g., return an error response
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return a success response with the created position
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "Priority created successfully",
-		"createdStatus": createdPosition,
+		"message":         "Position created successfully",
+		"createdPosition": createdPosition,
+	})
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*!___________________________________________________________________________________________________________________________________!*/
+/*!-----------------------------------------------------------SLA---------------------------------------------------------------------!*/
+/*!-----------------------------------------------------------------------------------------------------------------------------------!*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func CreateSlaHandler(c *gin.Context) {
+	var s structs.Sla
+	s.SlaName = c.PostForm("slaName")
+	s.PriorityID, _ = strconv.Atoi(c.PostForm("priorityID"))
+	s.SatisfactionID, _ = strconv.Atoi(c.PostForm("satisfactionID"))
+	s.PolicyID, _ = strconv.Atoi(c.PostForm("policyID"))
+
+	createdSla, e := CreateSla(c, s)
+	if e != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create SLA"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "SLA created successfully",
+		"createdSlaID": createdSla,
+	})
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*!___________________________________________________________________________________________________________________________________!*/
+/*!--------------------------------------------------------SATISFACTION---------------------------------------------------------------!*/
+/*!-----------------------------------------------------------------------------------------------------------------------------------!*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func CreateSatisfactionHandler(c *gin.Context) {
+	var sat structs.Satisfaction
+	sat.Name = c.PostForm("satisfactionName")
+	sat.Rank, _ = strconv.Atoi(c.PostForm("rank"))
+	sat.Emoji = c.PostForm("emoji")
+
+	createdSatisfaction, err := CreateSatisfaction(c, sat)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":             "Satisfaction created successfully",
+		"createdSatisfaction": createdSatisfaction,
+	})
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*!___________________________________________________________________________________________________________________________________!*/
+/*!----------------------------------------------------------POLICIES-----------------------------------------------------------------!*/
+/*!-----------------------------------------------------------------------------------------------------------------------------------!*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func CreatePoliciesHandler(c *gin.Context) {
+	var pol structs.Policies
+	pol.PolicyName = c.PostForm("policyName")
+	pol.EmbeddedLink = c.PostForm("embeddedLink")
+	pol.PolicyUrl = c.PostForm("policyUrl")
+
+	createdPolicy, err := CreatePolicy(c, pol)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":         "Policy created successfully",
+		"createdPolicies": createdPolicy,
+	})
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*!___________________________________________________________________________________________________________________________________!*/
+/*!------------------------------------------------------------UNIT-------------------------------------------------------------------!*/
+/*!-----------------------------------------------------------------------------------------------------------------------------------!*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func CreateUnitHandler(c *gin.Context) {
+	var unit structs.Unit
+	unit.UnitName = c.PostForm("unitName")
+	unit.Emoji = c.PostForm("emoji")
+
+	createdUnit, err := CreateUnit(c, unit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Unit created successfully",
+		"createdUnit": createdUnit,
+	})
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*!___________________________________________________________________________________________________________________________________!*/
+/*!-----------------------------------------------------------ROLE--------------------------------------------------------------------!*/
+/*!-----------------------------------------------------------------------------------------------------------------------------------!*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func CreateRoleHandler(c *gin.Context) {
+	var r structs.Role
+	r.RoleName = c.PostForm("roleName")
+
+	createdRole, err := CreateRole(c, r)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Role created successfully",
+		"createdRole": createdRole,
+	})
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*!___________________________________________________________________________________________________________________________________!*/
+/*!----------------------------------------------------------CATEGORY-----------------------------------------------------------------!*/
+/*!-----------------------------------------------------------------------------------------------------------------------------------!*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func CreateCategoryHandler(c *gin.Context) {
+	var cat structs.Category
+	cat.CategoryName = c.PostForm("categoryName")
+
+	createdCategory, err := CreateCategory(c, cat)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":         "Category created successfully",
+		"createdCategory": createdCategory,
+	})
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*!___________________________________________________________________________________________________________________________________!*/
+/*!---------------------------------------------------------SUBCATEGORY---------------------------------------------------------------!*/
+/*!-----------------------------------------------------------------------------------------------------------------------------------!*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func CreateSubCategoryHandler(c *gin.Context) {
+	var subCat structs.SubCategory
+	subCat.SubCategoryName = c.PostForm("subCategoryName")
+	subCat.CategoryID, _ = strconv.Atoi(c.PostForm("categoryID"))
+
+	createdSubCategory, err := CreateSubCategory(c, subCat)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":            "Sub-category created successfully",
+		"createdSubCategory": createdSubCategory,
 	})
 }

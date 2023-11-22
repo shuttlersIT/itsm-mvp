@@ -17,23 +17,23 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-func getAgentID(e string, c *gin.Context) (int, string) {
+func getAgentID(e string, c *gin.Context) (int, string, error) {
 	var id int
 	email := e
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return 0, ""
+		return 0, "", fmt.Errorf("unable to reach db")
 	}
 
 	err := db.QueryRow("SELECT id FROM agent WHERE email = ?", email).
 		Scan(&id)
 	if err != nil {
-		_, id, _ = CreateUser(c)
+		//_, id, _ = CreateUser(c)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Agent email not found in our records"})
-		return id, email
+		return 0, "", err
 	}
-	return id, email
+	return id, email, nil
 }
 
 func init() {
@@ -109,7 +109,7 @@ func AdminAuthHandler(c *gin.Context) {
 	}
 
 	//
-	userId, _ := getAgentID(u.Email, c)
+	userId, _, _ := getAgentID(u.Email, c)
 	adminSession.Set("id", userId)
 	adminSession.Set("user-email", u.Email)
 	adminSession.Set("user-name", u.Name)

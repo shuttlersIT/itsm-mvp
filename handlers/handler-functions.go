@@ -41,23 +41,23 @@ func ShareDb(d *sql.DB, c *gin.Context) *sql.DB {
 	return d
 }
 
-func getID(e string, c *gin.Context) (int, string) {
+func getID(e string, c *gin.Context) (int, string, error) {
 	var id int
 	email := e
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return 0, ""
+		return 0, "", fmt.Errorf("cant reach db")
 	}
 
 	err := db.QueryRow("SELECT id FROM staff WHERE email = ?", email).
 		Scan(&id)
 	if err != nil {
-		_, id, _ = CreateUser(c)
+		//_, id, _ = CreateUser2(c)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Staff email not found in our records"})
-		return id, email
+		return 0, "", err
 	}
-	return id, email
+	return id, email, nil
 }
 
 func getLoginURL(state string) string {
@@ -137,7 +137,7 @@ func AuthHandler(c *gin.Context) {
 	}
 
 	//
-	userId, _ := getID(u.Email, c)
+	userId, _, _ := getID(u.Email, c)
 	session.Set("id", userId)
 	session.Set("user-email", u.Email)
 	session.Set("user-name", u.Name)

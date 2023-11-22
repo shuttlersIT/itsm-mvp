@@ -228,14 +228,14 @@ func UpdateUserName(c *gin.Context) {
 
 	//userID := GetUserId(c) // Implement a function to get the current user's ID
 	//newName := c.PostForm("name")
-	var staff structs.Staff
-	if err := c.ShouldBindJSON(&staff); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	//var staff structs.Staff
+	//if err := c.ShouldBindJSON(&staff); err != nil {
+	//	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	//	return
+	//}
 
 	id := getUserByEmail(c, staff_email)
-	staff = GetUserByID(c, id)
+	staff, _ := GetUserByID(c, id)
 
 	staff.StaffID = getUserByEmail(c, staff_email)
 	staff.FirstName = first_name
