@@ -54,9 +54,10 @@ func GetUserByID(c *gin.Context, id int) (*structs.Staff, error) {
 		if e != nil {
 			c.JSON(http.StatusNotFound, "an error occured when getting staff from db")
 			return nil, e
+		} else {
+			c.JSON(http.StatusOK, "staff retrieval successfull")
+			return s, nil
 		}
-		c.JSON(http.StatusOK, "staff retrieval successfull")
-		return s, nil
 	}
 	return nil, fmt.Errorf("staff %d not found", id)
 }

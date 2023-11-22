@@ -55,11 +55,12 @@ func GetAgent(c *gin.Context, agentID int) (*structs.Agent, error) {
 		if e != nil {
 			c.JSON(http.StatusNotFound, "an error occured when getting agent from db")
 			return nil, e
+		} else {
+			c.JSON(http.StatusOK, "agent retrieval successfull")
+			return agent, nil
 		}
-		c.JSON(http.StatusOK, "agent retrieval successfull")
-		return agent, nil
 	}
-	return nil, fmt.Errorf("Agent ID %d not found", agentID)
+	return nil, fmt.Errorf("agent ID %d not found", agentID)
 }
 
 // Update an agent by ID
