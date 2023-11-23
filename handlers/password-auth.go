@@ -79,6 +79,28 @@ func getCred(c *gin.Context, username string) (int, string) {
 	return staffCredentials.CredentialID, staffCredentials.Password
 }
 
+// Get a username from database
+func GetCred2(c *gin.Context, username int) (*structs.StaffLoginCredentials, error) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		//c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return nil, fmt.Errorf("unable to read db")
+	}
+
+	var s structs.StaffLoginCredentials
+	err := db.QueryRow("SELECT id, username, password FROM staff_credentials WHERE id = ?", username).
+		Scan(&s.CredentialID, s.Username, s.Password)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return nil, fmt.Errorf("user credentials not found")
+	}
+	staffCredentials := s
+	c.JSON(http.StatusOK, staffCredentials)
+
+	return &staffCredentials, nil
+}
+
 // Get a user ID from database
 func GetStaff(c *gin.Context, id int) (int, string, string, string, int, int, int) {
 	// Don't forget type assertion when getting the connection from context.

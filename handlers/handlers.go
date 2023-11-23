@@ -44,8 +44,8 @@ func CreateAgentHandler(c *gin.Context) {
 	a.AgentEmail = c.PostForm("agentEmail")
 	a.Username, _ = strconv.Atoi(c.PostForm("username"))
 	a.Phone, _ = strconv.Atoi(c.PostForm("phone"))
-	a.RoleID = c.PostForm("roleID")
-	a.Unit = c.PostForm("unit")
+	a.RoleID, _ = strconv.Atoi(c.PostForm("roleID"))
+	a.Unit, _ = strconv.Atoi(c.PostForm("unit"))
 	a.SupervisorID, _ = strconv.Atoi(c.PostForm("supervisorID"))
 
 	createdAgent, _, err := CreateAgent(c, a)
@@ -109,9 +109,9 @@ func CreateTicketHandler(c *gin.Context) {
 	t.DueAt, _ = time.Parse("02-01-2006", c.PostForm("ticketDueDate"))
 	t.AssetID, _ = strconv.Atoi(c.PostForm("ticketAssetID"))
 	t.RelatedTicketID, _ = strconv.Atoi(c.PostForm("ticketRelatedTicket"))
-	t.Tag, _ = strconv.Atoi(c.PostForm("ticketTag"))
-	t.Site, _ = strconv.Atoi(c.PostForm("ticketSite"))
-	t.Status, _ = strconv.Atoi(c.PostForm("ticketStatus"))
+	t.Tag = c.PostForm("ticketTag")
+	t.Site = c.PostForm("ticketSite")
+	t.Status = c.PostForm("ticketStatus")
 	t.AttachmentID, _ = strconv.Atoi(c.PostForm("ticketAttachmentID"))
 
 	// Call the CreateStatus function
@@ -165,7 +165,7 @@ func CreateStatusHandler(c *gin.Context) {
 func CreateAssetHandler(c *gin.Context) {
 	var a structs.Asset
 	// Get asset details from the request JSON or other sources
-	a.AssetID, _ = strconv.Atoi(c.PostForm("assetID"))
+	a.AssetID = c.PostForm("assetID")
 	a.AssetType = c.PostForm("assetType")
 	a.AssetName = c.PostForm("assetName")
 	a.Description = c.PostForm("assetDescription")

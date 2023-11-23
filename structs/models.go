@@ -24,8 +24,8 @@ type Agent struct {
 	AgentEmail   string    `json:"agent_email"`
 	Username     int       `json:"username"`
 	Phone        int       `json:"phone"`
-	RoleID       string    `json:"role_id"`
-	Unit         string    `json:"unit"`
+	RoleID       int       `json:"role_id"`
+	Unit         int       `json:"unit"`
 	SupervisorID int       `json:"supervisor_id"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
@@ -46,15 +46,15 @@ type Ticket struct {
 	DueAt           time.Time `json:"due_at"`
 	AssetID         int       `json:"asset_id"`
 	RelatedTicketID int       `json:"related_ticket_id"`
-	Tag             int       `json:"tag"`
-	Site            int       `json:"site"`
-	Status          int       `json:"status"`
+	Tag             string    `json:"tag"`
+	Site            string    `json:"site"`
+	Status          string    `json:"status"`
 	AttachmentID    int       `json:"attachment"`
 }
 
 type Asset struct {
 	ID            int       `json:"id"`
-	AssetID       int       `json:"asset_id"`
+	AssetID       string    `json:"asset_id"`
 	AssetType     string    `json:"asset_type"`
 	AssetName     string    `json:"asset_name"`
 	Description   string    `json:"description"`
@@ -165,6 +165,7 @@ type StaffLoginCredentials struct {
 	CredentialID int       `json:"credentials_id"`
 	Username     string    `json:"username"`
 	Password     string    `json:"password"`
+	StaffID      int       `json:"staff_id"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
@@ -173,7 +174,7 @@ type AgentLoginCredentials struct {
 	CredentialID int       `json:"credentials_id"`
 	Username     string    `json:"username"`
 	Password     string    `json:"password"`
-	AgentID      int       `json:"staff_id"`
+	AgentID      int       `json:"agent_id"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
