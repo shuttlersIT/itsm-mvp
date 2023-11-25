@@ -1107,26 +1107,26 @@ func GetCategory(c *gin.Context, categoryID int) (*structs.Category, error) {
 }
 
 // Update a category by ID
-func UpdateCategory(c *gin.Context, cid int) (*structs.Category, error) {
+func UpdateCategory(c *gin.Context, cid structs.Category) (*structs.Category, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	id := cid
-	var s structs.Category
-	if err := c.ShouldBindJSON(&s); err != nil {
+	if err := c.ShouldBindJSON(&cid); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("bad request")
 	}
-	_, err := db.Exec("UPDATE category SET category_name = ? WHERE id = ?", s.CategoryName, id)
+	_, err := db.Exec("UPDATE category SET category_name = ? WHERE id = ?", cid.CategoryName, cid.CategoryID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("failed to update category")
 	}
+	s, _ := GetCategory(c, cid.CategoryID)
+
 	c.JSON(http.StatusOK, "Category updated successfully")
-	return &s, nil
+	return s, nil
 }
 
 // Delete a category by ID
@@ -1234,26 +1234,29 @@ func GetSubCategory(c *gin.Context, subCategoryID int) (*structs.SubCategory, er
 }
 
 // Update a Subcategory by ID
-func UpdateSubCategory(c *gin.Context, scid int) (*structs.SubCategory, error) {
+func UpdateSubCategory(c *gin.Context, scid structs.SubCategory) (*structs.SubCategory, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	id := scid
-	var s structs.SubCategory
-	if err := c.ShouldBindJSON(&s); err != nil {
+	//id := scid
+	//var s structs.SubCategory
+	if err := c.ShouldBindJSON(&scid); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("bad request")
 	}
-	_, err := db.Exec("UPDATE sub_category SET sub_category_name = ?, category_id = ? WHERE id = ?", s.SubCategoryName, s.CategoryID, id)
+	_, err := db.Exec("UPDATE sub_category SET sub_category_name = ?, category_id = ? WHERE id = ?", scid.SubCategoryName, scid.CategoryID, scid.SubCategoryID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("failed to update sub-category")
 	}
+
+	s, _ := GetSubCategory(c, scid.CategoryID)
+
 	c.JSON(http.StatusOK, "Sub-Category updated successfully")
-	return &s, nil
+	return s, nil
 }
 
 // Delete a Subcategory by ID

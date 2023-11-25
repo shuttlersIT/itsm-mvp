@@ -60,6 +60,37 @@ func CreateAgentHandler(c *gin.Context) {
 	})
 }
 
+// UpdateAgentHandler updates an agent
+func UpdateAgentHandler(c *gin.Context) {
+	var a structs.Agent
+	// Get agent details from the request JSON or other sources
+	a.AgentID, _ = strconv.Atoi(c.PostForm("agentID"))
+	a.FirstName = c.PostForm("firstName")
+	a.LastName = c.PostForm("lastName")
+	a.AgentEmail = c.PostForm("agentEmail")
+	a.Username, _ = strconv.Atoi(c.PostForm("username"))
+	a.Phone, _ = strconv.Atoi(c.PostForm("phone"))
+	a.RoleID, _ = strconv.Atoi(c.PostForm("roleID"))
+	a.Unit, _ = strconv.Atoi(c.PostForm("unit"))
+	a.SupervisorID, _ = strconv.Atoi(c.PostForm("supervisorID"))
+
+	// Call the UpdateAgent function
+	id, err := UpdateAgent(c, a)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	updatedAgent, _ := GetAgent(c, id)
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Agent updated successfully",
+		"UpdatedAgent": updatedAgent,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!------------------------------------------------------------STAFF------------------------------------------------------------------!*/
@@ -85,6 +116,42 @@ func CreateStaffHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Staff created successfully",
 		"createdStaff": createdStaff,
+	})
+}
+
+// UpdateStaffHandler updates a staff member
+func UpdateStaffHandler(c *gin.Context) {
+	var s structs.Staff
+	// Get staff details from the request JSON or other sources
+	s.StaffID, _ = strconv.Atoi(c.PostForm("staffID"))
+	s.FirstName = c.PostForm("firstName")
+	s.LastName = c.PostForm("lastName")
+	s.StaffEmail = c.PostForm("staffEmail")
+	s.Username, _ = strconv.Atoi(c.PostForm("username"))
+	s.Phone, _ = strconv.Atoi(c.PostForm("phone"))
+	s.PositionID, _ = strconv.Atoi(c.PostForm("positionID"))
+	s.DepartmentID, _ = strconv.Atoi(c.PostForm("departmentID"))
+
+	// Call the UpdateStaff function
+	id, err := UpdateUser(c, s)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	updatedStaff, e := GetUserByID(c, id)
+	if e != nil {
+		// Return a success response
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Staff update failed",
+		})
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Staff updated successfully",
+		"createdStaff": updatedStaff,
 	})
 }
 
@@ -126,6 +193,42 @@ func CreateTicketHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "Ticket created successfully",
 		"createdStatus": createdTicket,
+	})
+}
+
+// UpdateTicketHandler updates a ticket
+func UpdateTicketHandler(c *gin.Context) {
+	var t structs.Ticket
+	// Get ticket details from the request JSON or other sources
+	t.ID, _ = strconv.Atoi(c.PostForm("ticketID"))
+	t.Subject = c.PostForm("ticketSubject")
+	t.Description = c.PostForm("ticketDescription")
+	t.Category, _ = strconv.Atoi(c.PostForm("ticketCategory"))
+	t.SubCategory, _ = strconv.Atoi(c.PostForm("ticketSubSubject"))
+	t.Priority, _ = strconv.Atoi(c.PostForm("ticketPriority"))
+	t.SLA, _ = strconv.Atoi(c.PostForm("ticketSla"))
+	t.StaffID, _ = strconv.Atoi(c.PostForm("ticketStaffID"))
+	t.AgentID, _ = strconv.Atoi(c.PostForm("ticketAgentID"))
+	t.DueAt, _ = time.Parse("02-01-2006", c.PostForm("ticketDueDate"))
+	t.AssetID, _ = strconv.Atoi(c.PostForm("ticketAssetID"))
+	t.RelatedTicketID, _ = strconv.Atoi(c.PostForm("ticketRelatedTicket"))
+	t.Tag = c.PostForm("ticketTag")
+	t.Site = c.PostForm("ticketSite")
+	t.Status = c.PostForm("ticketStatus")
+	t.AttachmentID, _ = strconv.Atoi(c.PostForm("ticketAttachmentID"))
+
+	// Call the UpdateTicket function
+	updatedTicket, err := UpdateTicketOperation(c, t)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "Ticket updated successfully",
+		"updatedTicket": updatedTicket,
 	})
 }
 
@@ -218,6 +321,29 @@ func CreateDepartmentHandler(c *gin.Context) {
 	})
 }
 
+// UpdateDepartmentHandler updates department details
+func UpdateDepartmentHandler(c *gin.Context) {
+	var department structs.Department
+	// Get department details from the request JSON or other sources
+	department.DepartmentID, _ = strconv.Atoi(c.PostForm("departmentID"))
+	department.DepartmentName = c.PostForm("departmentName")
+	department.Emoji = c.PostForm("emoji")
+
+	// Call the UpdateDepartment function
+	updatedDepartment, err := UpdateDepartment(c, department.DepartmentID, department.DepartmentName, department.Emoji)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":           "Department updated successfully",
+		"updatedDepartment": updatedDepartment,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!-----------------------------------------------------------PRIORITY----------------------------------------------------------------!*/
@@ -239,6 +365,30 @@ func CreatePriorityHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Priority created successfully",
 		"createdPriority": createdPriority,
+	})
+}
+
+// UpdatePriorityHandler updates a priority
+func UpdatePriorityHandler(c *gin.Context) {
+	var priority structs.Priority
+	// Get priority details from the request JSON or other sources
+	priority.PriorityID, _ = strconv.Atoi(c.PostForm("priorityID"))
+	priority.Name = c.PostForm("priorityName")
+	priority.FirstResponse, _ = strconv.Atoi(c.PostForm("firstResponse"))
+	priority.Colour = c.PostForm("colour")
+
+	// Call the UpdatePriority function
+	updatePriority, err := UpdatePriority(c, priority.PriorityID, priority.Name, priority.FirstResponse, priority.Colour)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Priority updated successfully",
+		"updatePriority": updatePriority,
 	})
 }
 
@@ -265,6 +415,29 @@ func CreatePositionHandler(c *gin.Context) {
 	})
 }
 
+// UpdatePositionHandler updates position details
+func UpdatePositionHandler(c *gin.Context) {
+	var position structs.Position
+	// Get position details from the request JSON or other sources
+	position.PositionID, _ = strconv.Atoi(c.PostForm("positionID"))
+	position.PositionName = c.PostForm("positionName")
+	position.CadreName = c.PostForm("cadreName")
+
+	// Call the UpdatePosition function
+	updatedPolicy, err := UpdatePosition(c, position.PositionID, position.PositionName, position.CadreName)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "Position updated successfully",
+		"updatedPolicy": updatedPolicy,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!-----------------------------------------------------------SLA---------------------------------------------------------------------!*/
@@ -286,7 +459,32 @@ func CreateSlaHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "SLA created successfully",
-		"createdSlaID": createdSla,
+		"createdSlaID": createdSla.SlaID,
+	})
+}
+
+// UpdateSlaHandler updates an SLA
+func UpdateSlaHandler(c *gin.Context) {
+	var sla structs.Sla
+	// Get SLA details from the request JSON or other sources
+	sla.SlaID, _ = strconv.Atoi(c.PostForm("slaID"))
+	sla.SlaName = c.PostForm("slaName")
+	sla.PriorityID, _ = strconv.Atoi(c.PostForm("priorityID"))
+	sla.SatisfactionID, _ = strconv.Atoi(c.PostForm("satisfactionID"))
+	sla.PolicyID, _ = strconv.Atoi(c.PostForm("policyID"))
+
+	// Call the UpdateSla function
+	updatedSla, err := UpdateSla(c, sla.SlaID, sla.SlaName, sla.PriorityID, sla.SatisfactionID, sla.PolicyID)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "SLA updated successfully",
+		"updatedSla": updatedSla,
 	})
 }
 
@@ -313,6 +511,30 @@ func CreateSatisfactionHandler(c *gin.Context) {
 	})
 }
 
+// UpdateSatisfactionHandler updates satisfaction details
+func UpdateSatisfactionHandler(c *gin.Context) {
+	var satisfaction structs.Satisfaction
+	// Get satisfaction details from the request JSON or other sources
+	satisfaction.SatisfactionID, _ = strconv.Atoi(c.PostForm("satisfactionID"))
+	satisfaction.Name = c.PostForm("satisfactionName")
+	satisfaction.Rank, _ = strconv.Atoi(c.PostForm("rank"))
+	satisfaction.Emoji = c.PostForm("emoji")
+
+	// Call the UpdateSatisfaction function
+	updatedSatisfaction, err := UpdateSatisfaction(c, satisfaction.SatisfactionID, satisfaction.Name, satisfaction.Rank, satisfaction.Emoji)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":             "Satisfaction updated successfully",
+		"updatedSatisfaction": updatedSatisfaction,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!----------------------------------------------------------POLICIES-----------------------------------------------------------------!*/
@@ -333,6 +555,30 @@ func CreatePoliciesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Policy created successfully",
 		"createdPolicies": createdPolicy,
+	})
+}
+
+// UpdatePoliciesHandler updates policy details
+func UpdatePoliciesHandler(c *gin.Context) {
+	var policies structs.Policies
+	// Get policy details from the request JSON or other sources
+	policies.PolicyID, _ = strconv.Atoi(c.PostForm("policyID"))
+	policies.PolicyName = c.PostForm("policyName")
+	policies.EmbeddedLink = c.PostForm("embeddedLink")
+	policies.PolicyUrl = c.PostForm("policyUrl")
+
+	// Call the UpdatePolicies function
+	updatedPolicy, err := UpdatePolicy(c, policies.PolicyID, policies.PolicyName, policies.EmbeddedLink, policies.PolicyUrl)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "Policy updated successfully",
+		"updatedPolicy": updatedPolicy,
 	})
 }
 
@@ -358,6 +604,29 @@ func CreateUnitHandler(c *gin.Context) {
 	})
 }
 
+// UpdateUnitHandler updates unit details
+func UpdateUnitHandler(c *gin.Context) {
+	var unit structs.Unit
+	// Get unit details from the request JSON or other sources
+	unit.UnitID, _ = strconv.Atoi(c.PostForm("unitID"))
+	unit.UnitName = c.PostForm("unitName")
+	unit.Emoji = c.PostForm("emoji")
+
+	// Call the UpdateUnit function
+	updatedUnit, err := UpdateUnit(c, unit.UnitID, unit.UnitName, unit.Emoji)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Unit updated successfully",
+		"updatedUnit": updatedUnit,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!-----------------------------------------------------------ROLE--------------------------------------------------------------------!*/
@@ -376,6 +645,28 @@ func CreateRoleHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "Role created successfully",
 		"createdRole": createdRole,
+	})
+}
+
+// UpdateRoleHandler updates role details
+func UpdateRoleHandler(c *gin.Context) {
+	var role structs.Role
+	// Get role details from the request JSON or other sources
+	role.RoleID, _ = strconv.Atoi(c.PostForm("roleID"))
+	role.RoleName = c.PostForm("roleName")
+
+	// Call the UpdateRole function
+	updatedRole, err := UpdateRole(c, role.RoleID, role.RoleName)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Role updated successfully",
+		"updatedRole": updatedRole,
 	})
 }
 
@@ -400,6 +691,28 @@ func CreateCategoryHandler(c *gin.Context) {
 	})
 }
 
+// UpdateCategoryHandler updates category details
+func UpdateCategoryHandler(c *gin.Context) {
+	var category structs.Category
+	// Get category details from the request JSON or other sources
+	category.CategoryID, _ = strconv.Atoi(c.PostForm("categoryID"))
+	category.CategoryName = c.PostForm("categoryName")
+
+	// Call the UpdateCategory function
+	updatedCategory, err := UpdateCategory(c, category)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":         "Category updated successfully",
+		"updatedCategory": updatedCategory,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!---------------------------------------------------------SUBCATEGORY---------------------------------------------------------------!*/
@@ -419,5 +732,28 @@ func CreateSubCategoryHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":            "Sub-category created successfully",
 		"createdSubCategory": createdSubCategory,
+	})
+}
+
+// UpdateSubCategoryHandler updates sub-category details
+func UpdateSubCategoryHandler(c *gin.Context) {
+	var subCategory structs.SubCategory
+	// Get sub-category details from the request JSON or other sources
+	subCategory.SubCategoryID, _ = strconv.Atoi(c.PostForm("subCategoryID"))
+	subCategory.SubCategoryName = c.PostForm("subCategoryName")
+	subCategory.CategoryID, _ = strconv.Atoi(c.PostForm("categoryID"))
+
+	// Call the UpdateSubCategory function
+	updatedSubCategory, err := UpdateSubCategory(c, subCategory)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":            "Sub-category updated successfully",
+		"updatedSubCategory": updatedSubCategory,
 	})
 }

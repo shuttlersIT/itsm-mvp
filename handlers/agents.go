@@ -188,3 +188,34 @@ func CreateAgent(c *gin.Context, agent structs.Agent) (*structs.Agent, int, erro
 		return s.StaffID
 	*/
 }
+
+// Update a update by Struct
+func UpdateAgent(c *gin.Context, a structs.Agent) (int, error) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
+		return 0, fmt.Errorf("unable to reach DB")
+	}
+
+	// session := sessions.Default(c)
+	// id := session.Get("id")
+	// var s structs.Staff
+	id := a.AgentID
+	if err := c.ShouldBindJSON(&a); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return 0, fmt.Errorf("unable to bind json")
+	}
+	_, err := db.Exec("UPDATE agents SET first_name = ?, last_name = ?, agent_email = ?, phone = ?, username_id = ?, role_id = ?, unit_id = ?, supervisor_id = ? WHERE id = ?", &a.AgentID, &a.FirstName, &a.LastName, &a.AgentEmail, &a.Username, &a.Phone, &a.RoleID, &a.Unit, &a.SupervisorID, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return 0, fmt.Errorf("user not found")
+	}
+
+	if err != nil {
+		c.JSON(http.StatusOK, "Agent update failed")
+		return 0, fmt.Errorf("update failed")
+	}
+	c.JSON(http.StatusOK, "User updated successfully")
+	return id, fmt.Errorf("successful")
+}

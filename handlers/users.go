@@ -86,12 +86,12 @@ func getUserByEmail(c *gin.Context, e string) int {
 }
 
 // Update a update by Struct
-func UpdateUser(c *gin.Context, user structs.Staff) int {
+func UpdateUser(c *gin.Context, user structs.Staff) (int, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
-		return 0
+		return 0, fmt.Errorf("unable to reach DB")
 	}
 
 	// session := sessions.Default(c)
@@ -100,16 +100,16 @@ func UpdateUser(c *gin.Context, user structs.Staff) int {
 	id := user.StaffID
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return 0
+		return 0, fmt.Errorf("unable to bind json")
 	}
 	_, err := db.Exec("UPDATE staff SET first_name = ?, last_name = ?, staff_email = ?, username_id = ?, position_id = ?, department_id = ?, WHERE id = ?", user.FirstName, user.LastName, user.StaffEmail, user.Username, user.PositionID, user.DepartmentID, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return 0
+		return 0, fmt.Errorf("user not found")
 	}
 	c.JSON(http.StatusOK, "User updated successfully")
 
-	return id
+	return id, fmt.Errorf("successful")
 }
 
 // Update a update by Struct
