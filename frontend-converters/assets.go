@@ -88,3 +88,29 @@ func FrontEndAssetListB(c *gin.Context, assetList []*structs.Asset) []*frontends
 
 	return frontendAssetList
 }
+
+func ConvertFrontendToAsset(c *gin.Context, ft *frontendstructs.FrontendAsset) (*structs.Asset, error) {
+	var a structs.Asset
+	// Populate fields of Ticket using data from FrontendTicket
+	// Fetch additional details using handler functions if needed
+	// Handle errors appropriately
+
+	a.ID = ft.ID
+	a.AssetName = ft.AssetName
+	a.AssetType = ft.AssetType
+	a.AssetID = ft.AssetID
+	a.Description = ft.Description
+	a.Manufacturer = ft.Manufacturer
+	a.Model = ft.Model
+	a.SerialNumber = ft.SerialNumber
+	a.PurchaseDate = ft.PurchaseDate
+	a.PurchasePrice = ft.PurchasePrice
+	a.Vendor = ft.Vendor
+	a.Site = ft.Site
+	a.Status = ft.Status
+	//agent, _ := handlers.GetAgent(c, ft.CreatedBy)
+	//a.CreatedBy = agent.AgentID
+	// ... (populate other fields)
+
+	return &a, nil
+}

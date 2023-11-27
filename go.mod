@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/mattn/go-sqlite3 v1.14.17
+	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.14.0
 	golang.org/x/oauth2 v0.13.0
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22

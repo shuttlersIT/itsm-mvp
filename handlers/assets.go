@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -87,23 +88,30 @@ func CreateAsset(c *gin.Context, a structs.Asset) (*structs.Asset, int, error) {
 }
 
 // Get a asset by ID
-func GetAsset(c *gin.Context, aid int) {
+func GetAsset(c *gin.Context, aid int) (*structs.Asset, error) {
 	id := aid
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, fmt.Errorf("unable to reach db")
 	}
 	var t structs.Asset
+	if err := c.ShouldBindJSON(&t); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return nil, fmt.Errorf("asset failed json bind")
+	}
+
 	err := db.QueryRow("SELECT id, asset_id, asset_type, asset_name, description, manufacturer, model, serial_number, purchase_date, purchase_price, vendor, site, status, created_by FROM assets WHERE id = ?", id).
 		Scan(&t.ID, &t.AssetID, &t.AssetType, &t.AssetName, &t.Description, &t.Manufacturer, &t.Model, &t.SerialNumber, &t.PurchaseDate, &t.PurchasePrice, &t.Vendor, &t.Site, &t.Status, &t.CreatedBy)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Asset not found"})
-		return
+		return nil, fmt.Errorf("unable to find asset")
 	}
 	c.JSON(http.StatusOK, t)
+
+	return &t, nil
 }
 
 // Get a asset by ID
@@ -128,40 +136,46 @@ func GetAsset2(c *gin.Context, aid int) (int, structs.Asset) {
 }
 
 // Update a asset by ID
-func UpdateAsset(c *gin.Context, i int, aid int, atype string, aname string, desc string, man string, mod string, snum string, purch ItTime, price int, ven string, sit string, statu string) {
-	id := i
-	assetID := aid
-	assetType := atype
-	assetName := aname
-	description := desc
-	manufacturer := man
-	model := mod
-	serialNumber := snum
-	purchaseDate := purch
-	purchasePrice := price
-	vendor := ven
-	site := sit
-	status := statu
+func UpdateAsset(c *gin.Context, a structs.Asset) (*structs.Asset, error) {
+	ID := a.ID
+	assetID := a.AssetID
+	assetType := a.AssetType
+	assetName := a.AssetName
+	description := a.Description
+	manufacturer := a.Manufacturer
+	model := a.Model
+	serialNumber := a.SerialNumber
+	purchaseDate := a.PurchaseDate
+	purchasePrice := a.PurchasePrice
+	vendor := a.Vendor
+	site := a.Site
+	status := a.Status
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, fmt.Errorf("unable to reach db")
 	}
 
 	var t structs.Asset
 	if err := c.ShouldBindJSON(&t); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return nil, fmt.Errorf("unable to bind json")
 	}
 
-	_, err := db.Exec("UPDATE assets SET asset_id = ?, asset_type = ?, asset_name = ?, description = ?, manufacturer = ?, model = ?, serial_number = ?, purchase_date = ?, purchase_price = ?, vendor = ?, site = ?, status = ? WHERE id = ?", assetID, assetType, assetName, description, manufacturer, model, serialNumber, purchaseDate, purchasePrice, vendor, site, status, id)
+	result, err := db.Exec("UPDATE assets SET asset_id = ?, asset_type = ?, asset_name = ?, description = ?, manufacturer = ?, model = ?, serial_number = ?, purchase_date = ?, purchase_price = ?, vendor = ?, site = ?, status = ? WHERE id = ?", assetID, assetType, assetName, description, manufacturer, model, serialNumber, purchaseDate, purchasePrice, vendor, site, status, ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, fmt.Errorf("unable to update asset")
 	}
+
+	lastInsertID, _ := result.LastInsertId()
+	newAssetID := int(lastInsertID)
+	newAsset, _ := GetAsset(c, newAssetID)
+
 	c.JSON(http.StatusOK, "Asset updated successfully")
+	return newAsset, nil
 }
 
 // Delete a Asset by ID
@@ -180,4 +194,34 @@ func DeleteAsset(c *gin.Context, aid int) {
 		return
 	}
 	c.JSON(http.StatusOK, "Asset deleted successfully")
+}
+
+func updateAssetType(c *gin.Context, t structs.AssetType) (string, error) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
+		return "failed", fmt.Errorf("can't reach db")
+	}
+
+	t.AssetTypeID, _ = strconv.Atoi(c.PostForm("assetTypeID"))
+	t.AssetType = c.PostForm("typeName")
+
+	if err := c.ShouldBindJSON(&t); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return "failed", fmt.Errorf("unable to bind json")
+	}
+
+	_, err := db.Exec("UPDATE asset_type SET asset_type = ? WHERE id = ?", t.AssetType, t.AssetTypeID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return "failed", fmt.Errorf("unable to update asset")
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Asset type updated successfully",
+	})
+
+	return "Asset Type Update Successful", nil
 }

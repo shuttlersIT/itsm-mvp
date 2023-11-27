@@ -365,6 +365,62 @@ func CreateAssetHandler(c *gin.Context) {
 	})
 }
 
+// UpdateAssetsHandler updates an asset
+func UpdateAssetsHandler(c *gin.Context) {
+	//var a frontendstructs.FrontendAsset
+	var a structs.Asset
+	var err error
+	// Get asset details from the request JSON or other sources
+	a.AssetID = c.PostForm("assetID")
+	a.AssetType = c.PostForm("assetType")
+	a.AssetName = c.PostForm("assetName")
+	a.Description = c.PostForm("assetDescription")
+	a.Manufacturer = c.PostForm("assetManufacturer")
+	a.Model = c.PostForm("assetModel")
+	a.SerialNumber = c.PostForm("assetSerialNumber")
+	a.PurchaseDate = c.PostForm("assetPurchaseDate")
+	a.PurchasePrice = c.PostForm("assetPurchasePrice")
+	a.Vendor = c.PostForm("assetVendor")
+	a.Site = c.PostForm("assetSite")
+	a.Status = c.PostForm("assetStatus")
+
+	// Call the UpdateAssets function
+	asset, err := UpdateAsset(c, a)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Asset updated successfully",
+		"updatedAsset": asset,
+	})
+}
+
+// UpdateAssetTypeHandler updates an asset type
+func UpdateAssetTypeHandler(c *gin.Context) string {
+	var assetType structs.AssetType
+	// Get asset type details from the request JSON or other sources
+	assetType.AssetTypeID, _ = strconv.Atoi(c.PostForm("assetTypeID"))
+	assetType.AssetType = c.PostForm("typeName")
+
+	// Call the UpdateAssetType function
+	status, err := updateAssetType(c, assetType)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return status
+	}
+
+	// Return a success response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Asset type updated successfully",
+	})
+	return status
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!----------------------------------------------------------DEPARTMENTS--------------------------------------------------------------!*/
