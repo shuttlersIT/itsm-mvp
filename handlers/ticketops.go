@@ -1364,27 +1364,51 @@ func GetStatus(c *gin.Context, sid int) (*structs.Status, error) {
 	return nil, fmt.Errorf("status %d not found", id)
 }
 
+// Get a Status by ID
+func getStatusByName(c *gin.Context, sName string) (*structs.Status, error) {
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get status handler"})
+		fmt.Println("Unable to reach DB from get status handler")
+	}
+
+	rows, err := db.Query("SELECT * FROM status WHERE id = ?", sName)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "status not found"})
+		return nil, err
+	}
+	for rows.Next() {
+
+		s, _ := scanners.ScanIntoStatus(rows)
+		return s, nil
+	}
+	return nil, fmt.Errorf("status %v not found", sName)
+}
+
 // Update a Status by ID
-func UpdateStatus(c *gin.Context, sid int) (*structs.Status, error) {
+func UpdateStatus(c *gin.Context, s structs.Status) (*structs.Status, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
 		return nil, fmt.Errorf("unable to reach DB")
 	}
 
-	id := sid
-	var s structs.Status
 	if err := c.ShouldBindJSON(&s); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("bad request")
 	}
-	_, err := db.Exec("UPDATE status SET status_name = ? WHERE id = ?", s.StatusName, id)
+	result, err := db.Exec("UPDATE status SET status_name = ? WHERE id = ?", s.StatusName, s.StatusID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, fmt.Errorf("failed to update status")
 	}
+
+	lastInsertID, _ := result.LastInsertId()
+	iD := int(lastInsertID)
+
+	status, _ := GetStatus(c, iD)
 	c.JSON(http.StatusOK, "Status updated successfully")
-	return &s, nil
+	return status, nil
 }
 
 // Delete a Status by ID

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -256,6 +257,72 @@ func CreateStatusHandler(c *gin.Context) {
 		"message":       "Status created successfully",
 		"createdStatus": createdStatus,
 	})
+}
+
+// UpdateStatusHandler updates status details
+func UpdateStatusHandler(c *gin.Context) {
+	var status structs.Status
+	//var e error
+	// Get status details from the request JSON or other sources
+	status.StatusID, _ = strconv.Atoi(c.PostForm("statusID"))
+	status.StatusName = c.PostForm("statusName")
+	if err := c.ShouldBindJSON(&status); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":      err.Error(),
+			"badRequest": fmt.Errorf("bad request"),
+		})
+	}
+
+	if status.StatusID < 1 && status.StatusName != "" {
+		s, e := getStatusByName(c, status.StatusName)
+		if e != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":  fmt.Sprintf("unable to find status %v", status.StatusName),
+				"status": nil,
+			})
+		}
+		st, er := UpdateStatus(c, *s)
+		if er != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":  fmt.Sprintf("unable to find status %v", status.StatusName),
+				"status": nil,
+			})
+		} else {
+			sta, erro := GetStatus(c, st.StatusID)
+			if erro != nil {
+				c.JSON(http.StatusNotFound, gin.H{
+					"error":  fmt.Sprintf("unable to update status %v", status.StatusName),
+					"status": nil,
+				})
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"message":            "Status updated successfully",
+					"updatedSubCategory": sta,
+				})
+			}
+		}
+
+	} else if status.StatusID < 1 && status.StatusName == "" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":  fmt.Sprintf("unable to find status to update %v", status.StatusName),
+			"status": nil,
+		})
+
+	} else if status.StatusID > 0 {
+		// Call the UpdateStatus function
+		updatedStatus, err := UpdateStatus(c, status)
+		if err != nil {
+			// Handle the error, e.g., return an error response
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message":            "Status updated successfully",
+			"updatedSubCategory": updatedStatus,
+		})
+	}
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

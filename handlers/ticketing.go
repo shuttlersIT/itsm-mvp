@@ -269,7 +269,7 @@ func GetTicket(c *gin.Context, tid int) (int, structs.Ticket) {
 }
 
 // Update a ticket by ID
-func UpdateTicket(c *gin.Context) {
+func DeleteTicket2(c *gin.Context) {
 	id := c.Param("id")
 
 	// Don't forget type assertion when getting the connection from context.
