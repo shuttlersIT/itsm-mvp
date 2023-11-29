@@ -12,7 +12,7 @@ import (
 func AuthorizeRequest() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		v := session.Get("user-id")
+		v := session.Get("user-token-gen-on-server-side")
 		if v == nil {
 			c.HTML(http.StatusUnauthorized, "login.html", gin.H{"message": "Please login."})
 			c.Abort()
@@ -24,7 +24,7 @@ func AuthorizeRequest() gin.HandlerFunc {
 func AuthorizeAdminRequest() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		adminSession := sessions.Default(c)
-		v := adminSession.Get("user-id")
+		v := adminSession.Get("agent-token-gen-on-server-side")
 		if v == nil {
 			c.HTML(http.StatusUnauthorized, "admin/login.html", gin.H{"message": "Please login."})
 			c.Abort()

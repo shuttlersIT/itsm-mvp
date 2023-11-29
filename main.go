@@ -16,6 +16,7 @@ import (
 )
 
 func main() {
+
 	//initiate mysql database
 	status, db := database.ConnectMysql()
 	fmt.Println(status)
@@ -23,7 +24,6 @@ func main() {
 
 	//API ROUTER
 	api := gin.Default()
-
 	api.Use(middleware.ApiMiddleware(db))
 
 	//RedisHost := "127.0.0.1"
@@ -31,6 +31,11 @@ func main() {
 
 	//Dashboard APP
 	//router := gin.Default()
+	//token, err := handlers.RandToken(64)
+	//if err != nil {
+	//	log.Fatal("unable to generate random token: ", err)
+	//}
+
 	token, err := handlers.RandToken(64)
 	if err != nil {
 		log.Fatal("unable to generate random token: ", err)
@@ -39,7 +44,7 @@ func main() {
 	store, storeError := sessions.NewRedisStore(10, "tcp", "redisDB:6379", "", []byte(token))
 	if storeError != nil {
 		fmt.Println(storeError)
-		log.Fatal("Unable to create work with redis session ", storeError)
+		log.Fatal("Unable to create save session with redis session ", storeError)
 	}
 	//store := sessions.NewCookieStore([]byte(token))
 	store.Options(sessions.Options{
