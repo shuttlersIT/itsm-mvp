@@ -44,7 +44,7 @@ func CreateAgentHandler(c *gin.Context) {
 	a.LastName = c.PostForm("lastName")
 	a.AgentEmail = c.PostForm("agentEmail")
 	a.Username, _ = strconv.Atoi(c.PostForm("username"))
-	a.Phone, _ = strconv.Atoi(c.PostForm("phone"))
+	a.Phone = c.PostForm("phone")
 	a.RoleID, _ = strconv.Atoi(c.PostForm("roleID"))
 	a.Unit, _ = strconv.Atoi(c.PostForm("unit"))
 	a.SupervisorID, _ = strconv.Atoi(c.PostForm("supervisorID"))
@@ -70,7 +70,7 @@ func UpdateAgentHandler(c *gin.Context) {
 	a.LastName = c.PostForm("lastName")
 	a.AgentEmail = c.PostForm("agentEmail")
 	a.Username, _ = strconv.Atoi(c.PostForm("username"))
-	a.Phone, _ = strconv.Atoi(c.PostForm("phone"))
+	a.Phone = c.PostForm("phone")
 	a.RoleID, _ = strconv.Atoi(c.PostForm("roleID"))
 	a.Unit, _ = strconv.Atoi(c.PostForm("unit"))
 	a.SupervisorID, _ = strconv.Atoi(c.PostForm("supervisorID"))
@@ -84,11 +84,54 @@ func UpdateAgentHandler(c *gin.Context) {
 	}
 
 	updatedAgent, _ := GetAgent(c, id)
-
 	// Return a success response
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Agent updated successfully",
 		"UpdatedAgent": updatedAgent,
+	})
+}
+
+// GetAgentHandler retrieves details of a specific agent by ID
+func GetAgentHandler(c *gin.Context) {
+	// Get agent ID from the URL parameter
+	agentID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid agent ID"})
+		return
+	}
+
+	// Call the GetAgent function to retrieve the agent details
+	agent, err := GetAgent(c, agentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if agent == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return
+	}
+
+	// Return the agent details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Agent retrieved successfully",
+		"agent":   agent,
+	})
+}
+
+// ListAgentsHandler retrieves a list of all agents
+func ListAgentsHandler(c *gin.Context) {
+	// Call the ListAgents function to retrieve the list of agents
+	agents, err := ListAgents(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of agents in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "List of agents retrieved successfully",
+		"agents":  agents,
 	})
 }
 
@@ -104,7 +147,7 @@ func CreateStaffHandler(c *gin.Context) {
 	s.LastName = c.PostForm("lastName")
 	s.StaffEmail = c.PostForm("staffEmail")
 	s.Username, _ = strconv.Atoi(c.PostForm("username"))
-	s.Phone, _ = strconv.Atoi(c.PostForm("phone"))
+	s.Phone = c.PostForm("phone")
 	s.PositionID, _ = strconv.Atoi(c.PostForm("positionID"))
 	s.DepartmentID, _ = strconv.Atoi(c.PostForm("departmentID"))
 
@@ -129,7 +172,7 @@ func UpdateStaffHandler(c *gin.Context) {
 	s.LastName = c.PostForm("lastName")
 	s.StaffEmail = c.PostForm("staffEmail")
 	s.Username, _ = strconv.Atoi(c.PostForm("username"))
-	s.Phone, _ = strconv.Atoi(c.PostForm("phone"))
+	s.Phone = c.PostForm("phone")
 	s.PositionID, _ = strconv.Atoi(c.PostForm("positionID"))
 	s.DepartmentID, _ = strconv.Atoi(c.PostForm("departmentID"))
 
@@ -153,6 +196,50 @@ func UpdateStaffHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Staff updated successfully",
 		"createdStaff": updatedStaff,
+	})
+}
+
+// GetStaffHandler retrieves details of a specific staff by ID
+func GetStaffHandler(c *gin.Context) {
+	// Get staff ID from the URL parameter
+	staffID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid staff ID"})
+		return
+	}
+
+	// Call the GetStaff function to retrieve the staff details
+	staff, err := GetUserByID(c, staffID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if staff == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Staff not found"})
+		return
+	}
+
+	// Return the staff details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Staff retrieved successfully",
+		"staff":   staff,
+	})
+}
+
+// ListStaffHandler retrieves a list of all staff
+func ListStaffHandler(c *gin.Context) {
+	// Call the ListStaff function to retrieve the list of staff
+	staffList, err := ListUsers(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of staff in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "List of staff retrieved successfully",
+		"staff":   staffList,
 	})
 }
 
@@ -230,6 +317,77 @@ func UpdateTicketHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "Ticket updated successfully",
 		"updatedTicket": updatedTicket,
+	})
+}
+
+// GetTicketHandler retrieves details of a specific ticket by ID
+func GetTicketHandler(c *gin.Context) {
+	// Get ticket ID from the URL parameter
+	ticketID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ticket ID"})
+		return
+	}
+
+	// Call the GetTicket function to retrieve the ticket details
+	ticket, err := GetTicket(c, ticketID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the ticket details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Ticket retrieved successfully",
+		"ticket":  ticket,
+	})
+}
+
+// ListTicketHandler retrieves a list of all tickets
+func ListTicketHandler(c *gin.Context) {
+	// Call the ListTicket function to retrieve the list of tickets
+	ticketList, err := ListTickets(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of tickets in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "List of tickets retrieved successfully",
+		"tickets": ticketList,
+	})
+}
+
+// ListTicketHandler retrieves a paginated list of tickets
+func ListTicketsPageHandler(c *gin.Context) {
+	// Define default values for pagination
+	page := 1
+	perPage := 20
+
+	// Parse query parameters for pagination
+	if pageStr := c.Query("page"); pageStr != "" {
+		page, _ = strconv.Atoi(pageStr)
+	}
+
+	if perPageStr := c.Query("per_page"); perPageStr != "" {
+		perPage, _ = strconv.Atoi(perPageStr)
+	}
+
+	// Calculate offset based on page and perPage values
+	offset := (page - 1) * perPage
+
+	// Call the ListTickets function to retrieve the paginated list of tickets
+	ticketList, err := ListPageTickets(c, offset, perPage)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the paginated list of tickets in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Paginated list of tickets retrieved successfully",
+		"tickets": ticketList,
 	})
 }
 

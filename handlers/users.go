@@ -44,9 +44,9 @@ func GetUserByID(c *gin.Context, id int) (*structs.Staff, error) {
 		return nil, fmt.Errorf("db unreacheable")
 	}
 
-	rows, err := db.Query("SELECT * FROM agents WHERE id = ?", id)
+	rows, err := db.Query("SELECT * FROM staff WHERE id = ?", id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "staff not found"})
 		return nil, err
 	}
 	for rows.Next() {
@@ -238,4 +238,37 @@ func createStaffByForm(c *gin.Context, fn string, ln string, se string, u int, p
 	c.JSON(http.StatusOK, "User created successfully")
 
 	return s.StaffID
+}
+
+// List all Agents
+func ListUsers(c *gin.Context) ([]*structs.Staff, error) {
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return nil, fmt.Errorf("unable to reach db")
+	}
+
+	rows, err := db.Query("SELECT id, first_name, last_name, staff_email, username_id, position_id, department_id FROM staff")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return nil, fmt.Errorf("unable to retrieve agents at query")
+	}
+	defer rows.Close()
+
+	var staff []*structs.Staff
+	for rows.Next() {
+		//var a structs.Agent
+		a, err := scanners.ScanIntoStaff(rows)
+		//if err := rows.Scan(&a.AgentID, &a.FirstName, &a.LastName, &a.AgentEmail, &a.Username, &a.RoleID, &a.Unit, &a.SupervisorID); err != nil {
+		//	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		//	return nil, fmt.Errorf("unable to retrieve agents")
+		//}
+		if err != nil {
+			return nil, fmt.Errorf("unable to add staff to array")
+		}
+		staff = append(staff, a)
+	}
+	c.JSON(http.StatusOK, "Staff Listed successfully")
+	return staff, nil
 }

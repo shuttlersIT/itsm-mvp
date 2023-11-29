@@ -6,11 +6,11 @@ import (
 
 type Staff struct {
 	StaffID      int       `json:"staff_id"`
-	FirstName    string    `json:"first_name"`
-	LastName     string    `json:"last_name"`
-	StaffEmail   string    `json:"staff_email"`
+	FirstName    string    `json:"first_name" binding:"required"`
+	LastName     string    `json:"last_name" binding:"required"`
+	StaffEmail   string    `json:"staff_email" binding:"required,email"`
 	Username     int       `json:"username"`
-	Phone        int       `json:"phone"`
+	Phone        string    `json:"phoneNumber" binding:"required,e164"`
 	PositionID   int       `json:"position_id"`
 	DepartmentID int       `json:"department_id"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -18,12 +18,12 @@ type Staff struct {
 }
 
 type Agent struct {
-	AgentID      int       `json:"agent_id"`
-	FirstName    string    `json:"first_name"`
-	LastName     string    `json:"last_name"`
-	AgentEmail   string    `json:"agent_email"`
+	AgentID      int       `json:"agent_id" binding:"required,email"`
+	FirstName    string    `json:"first_name" binding:"required"`
+	LastName     string    `json:"last_name" binding:"required"`
+	AgentEmail   string    `json:"agent_email" binding:"required,email"`
 	Username     int       `json:"username"`
-	Phone        int       `json:"phone"`
+	Phone        string    `json:"phoneNumber" binding:"required,e164"`
 	RoleID       int       `json:"role_id"`
 	Unit         int       `json:"unit"`
 	SupervisorID int       `json:"supervisor_id"`

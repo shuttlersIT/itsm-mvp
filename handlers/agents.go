@@ -14,7 +14,7 @@ import (
 )
 
 // Get an agent id from database
-func GetAgentHandler(c *gin.Context) {
+func GetAgentHandler2(c *gin.Context) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
@@ -107,32 +107,36 @@ func DeleteAgentHandlers(c *gin.Context) {
 }
 
 // List all Agents
-func ListAgentsHandler(c *gin.Context) {
+func ListAgents(c *gin.Context) ([]*structs.Agent, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, fmt.Errorf("unable to reach db")
 	}
 
 	rows, err := db.Query("SELECT id, first_name, last_name, agent_email, username_id, role_id, unit, supervisor_id FROM agents")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, fmt.Errorf("unable to retrieve agents at query")
 	}
 	defer rows.Close()
 
-	var agents []structs.Agent
+	var agents []*structs.Agent
 	for rows.Next() {
-		var a structs.Agent
-		if err := rows.Scan(&a.AgentID, &a.FirstName, &a.LastName, &a.AgentEmail, &a.Username, &a.RoleID, &a.Unit, &a.SupervisorID); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+		//var a structs.Agent
+		a, err := scanners.ScanIntoAgent(rows)
+		//if err := rows.Scan(&a.AgentID, &a.FirstName, &a.LastName, &a.AgentEmail, &a.Username, &a.RoleID, &a.Unit, &a.SupervisorID); err != nil {
+		//	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		//	return nil, fmt.Errorf("unable to retrieve agents")
+		//}
+		if err != nil {
+			return nil, fmt.Errorf("unable to add agent to array")
 		}
 		agents = append(agents, a)
 	}
-
-	c.JSON(http.StatusOK, agents)
+	c.JSON(http.StatusOK, "Agents Listed successfully")
+	return agents, nil
 }
 
 // Create staff

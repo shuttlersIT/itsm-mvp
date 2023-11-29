@@ -8,9 +8,9 @@ type FrontendStaff struct {
 	StaffID    int       `json:"staffID"`
 	FirstName  string    `json:"firstName"`
 	LastName   string    `json:"lastName"`
-	StaffEmail string    `json:"staffEmail"`
+	StaffEmail string    `json:"staffEmail" binding:"required,email"`
 	Username   string    `json:"userName"`
-	Phone      int       `json:"phoneNumber"`
+	Phone      string    `json:"phoneNumber" binding:"required,e164"`
 	Position   string    `json:"position"`
 	Department string    `json:"department"`
 	CreatedAt  time.Time `json:"createdAt"`
@@ -21,9 +21,9 @@ type FrontendAgent struct {
 	AgentID    int       `json:"agentID"`
 	FirstName  string    `json:"firstName"`
 	LastName   string    `json:"lastName"`
-	AgentEmail string    `json:"agentEmail"`
+	AgentEmail string    `json:"agentEmail" binding:"required,email"`
 	Username   string    `json:"userName"`
-	Phone      int       `json:"phoneNumber"`
+	Phone      string    `json:"phoneNumber" binding:"required,e164"`
 	Role       string    `json:"role"`
 	Unit       string    `json:"unit"`
 	Supervisor string    `json:"supervisorID"`

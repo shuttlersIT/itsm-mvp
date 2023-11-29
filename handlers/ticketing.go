@@ -172,32 +172,33 @@ func DeleteTicketOperation(c *gin.Context, tid int) (*string, error) {
 /*----------------------------------------------------------------------------------------------------------------------------------------*/
 
 // List all tickets
-func ListTickets(c *gin.Context) {
+func ListTickets(c *gin.Context) ([]*structs.Ticket, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, fmt.Errorf("unable to reach db")
 	}
 
 	rows, err := db.Query("SELECT id, title, description, status FROM tickets")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, fmt.Errorf("unable to find tickets")
 	}
 	defer rows.Close()
 
-	var tickets []structs.Ticket
+	var tickets []*structs.Ticket
 	for rows.Next() {
-		var t structs.Ticket
-		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Status); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+		//var t *structs.Ticket
+		t, err := scanners.ScanIntoTicket(rows)
+
+		if err != nil {
+			return nil, fmt.Errorf("unable to add tickets to array")
 		}
 		tickets = append(tickets, t)
 	}
-
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, "Tickets Listed successfully")
+	return tickets, nil
 }
 
 // Create a new ticket
@@ -248,24 +249,31 @@ func GetTicket2(c *gin.Context) {
 }
 
 // Get a ticket by ID
-func GetTicket(c *gin.Context, tid int) (int, structs.Ticket) {
+func GetTicket(c *gin.Context, tid int) (*structs.Ticket, error) {
 	id := tid
-	var t structs.Ticket
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return 0, t
+		return nil, fmt.Errorf("unable to get ticket")
 	}
-	err := db.QueryRow("SELECT id, subject, description, status FROM tickets WHERE id = ?", id).
-		Scan(&t.ID, &t.Subject, &t.Description, &t.Status)
+	rows, err := db.Query("SELECT * FROM tickets WHERE id = ?", id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Ticket not found"})
-		return 0, t
+		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
+		return nil, fmt.Errorf("unable to get ticket")
 	}
-	c.JSON(http.StatusOK, t)
-	return 1, t
+	for rows.Next() {
+		t, e := scanners.ScanIntoTicket(rows)
+		if e != nil {
+			c.JSON(http.StatusNotFound, "an error occured when getting ticket from db")
+			return nil, e
+		} else {
+			c.JSON(http.StatusOK, "ticket retrieval successfull")
+			return t, nil
+		}
+	}
+	return nil, fmt.Errorf("ticket %d not found", id)
 }
 
 // Update a ticket by ID
@@ -302,4 +310,32 @@ func DeleteTicket(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, "Ticket deleted successfully")
+}
+
+// ListTickets retrieves a paginated list of tickets from the database
+func ListPageTickets(c *gin.Context, offset, perPage int) ([]*structs.Ticket, error) {
+	var tickets []*structs.Ticket
+
+	// Don't forget type assertion when getting the connection from context.
+	db, ok := c.MustGet("databaseConn").(*sql.DB)
+	if !ok {
+		return nil, fmt.Errorf("unable to reach DB")
+	}
+
+	// Use OFFSET and LIMIT in the SQL query for pagination
+	rows, err := db.Query("SELECT id, subject, description, category_id, sub_category_id, priority_id, sla_id, staff_id, agent_id, created_at, updated_at, due_at, asset_id, related_ticket_id, tag, site, status, attachment_id FROM tickets ORDER BY created_at DESC OFFSET $1 LIMIT $2", offset, perPage)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var t *structs.Ticket
+		if err := rows.Scan(&t.ID, &t.Subject, &t.Description, &t.Category, &t.SubCategory, &t.Priority, &t.SLA, &t.StaffID, &t.AgentID, &t.CreatedAt, &t.UpdatedAt, &t.DueAt, &t.AssetID, &t.RelatedTicketID, &t.Tag, &t.Site, &t.Status, &t.AttachmentID); err != nil {
+			return nil, err
+		}
+		tickets = append(tickets, t)
+	}
+
+	return tickets, nil
 }
