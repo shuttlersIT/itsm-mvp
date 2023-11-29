@@ -425,10 +425,9 @@ func GetAssetByTicket(c *gin.Context, ticketid int) (int, structs.Asset) {
 	exists := 0
 	status := 0
 
-	stat, tickets := handlers.GetTicket(c, ticket)
-	if stat > 0 {
-
-		if tickets.AssetID == 0 {
+	tickets, err := handlers.GetTicket(c, ticket)
+	if err == nil {
+		if tickets.AssetID < 1 {
 			c.JSON(http.StatusNotFound, gin.H{"error": "No Asset Related To This Ticket"})
 			return exists, asset
 		}
