@@ -579,6 +579,54 @@ func UpdateAssetTypeHandler(c *gin.Context) string {
 	return status
 }
 
+// GetAssetHandler retrieves details of a specific asset by ID
+func GetAssetHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	assetID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Call the GetAsset function to retrieve the asset details
+	asset, err := GetAsset(c, assetID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if asset == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Asset not found"})
+		return
+	}
+
+	// Return the asset details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Asset retrieved successfully",
+		"asset":   asset,
+	})
+}
+
+// ListAssetHandler retrieves a list of all assets
+func ListAssetHandler(c *gin.Context) {
+	// Call the ListAsset function to retrieve the list of assets
+	assetList, status, err := ListAssets(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if !status {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of assets in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "List of assets retrieved successfully",
+		"assets":  assetList,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!----------------------------------------------------------DEPARTMENTS--------------------------------------------------------------!*/

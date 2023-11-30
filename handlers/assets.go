@@ -14,32 +14,38 @@ import (
 )
 
 // List all Assets
-func ListAssets(c *gin.Context) {
+func ListAssets(c *gin.Context) ([]*structs.Asset, bool, error) {
+	status := false
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return nil, status, fmt.Errorf("unable to reach db")
 	}
 
 	rows, err := db.Query("SELECT id, asset_id, asset_type, asset_name, description, manufacturer, model, serial_number, purchase_date, purchase_price, vendor, site, status, created_by FROM assets")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, status, fmt.Errorf("unable to find asset")
 	}
 	defer rows.Close()
 
-	var assets []structs.Asset
+	var assets []*structs.Asset
 	for rows.Next() {
-		var t structs.Asset
+		var t *structs.Asset
 		if err := rows.Scan(&t.ID, &t.AssetID, &t.AssetType, &t.AssetName, &t.Description, &t.Manufacturer, &t.Model, &t.SerialNumber, &t.PurchaseDate, &t.PurchasePrice, &t.Vendor, &t.Site, &t.Status, &t.CreatedBy); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			return nil, status, fmt.Errorf("unable to retrieve asset")
 		}
 		assets = append(assets, t)
 	}
 
+	if len(assets) < 1 {
+		status = true
+	}
+
 	c.JSON(http.StatusOK, assets)
+	return assets, status, nil
 }
 
 // Create a new asset
