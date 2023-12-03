@@ -1565,7 +1565,7 @@ func ListSubCategoriesHandler(c *gin.Context) {
 
 	// Return the list of subcategories in the response
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "List of subcategories retrieved successfully",
+		"message":       "List of sub-categories retrieved successfully",
 		"subcategories": subcategories,
 	})
 }
