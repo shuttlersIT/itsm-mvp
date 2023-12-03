@@ -480,7 +480,50 @@ func UpdateStatusHandler(c *gin.Context) {
 			"updatedSubCategory": updatedStatus,
 		})
 	}
+}
 
+// GetStatusHandler retrieves details of a specific status by ID
+func GetStatusHandler(c *gin.Context) {
+	// Get status ID from the URL parameter
+	statusID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status ID"})
+		return
+	}
+
+	// Call the GetStatus function to retrieve the status details
+	status, err := GetStatus(c, statusID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if status == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Status not found"})
+		return
+	}
+
+	// Return the status details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Status retrieved successfully",
+		"status":  status,
+	})
+}
+
+// ListStatusHandler retrieves a list of all statuses
+func ListStatusHandler(c *gin.Context) {
+	// Call the ListStatus function to retrieve the list of statuses
+	statusList, err := ListStatus(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of statuses in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "List of statuses retrieved successfully",
+		"statuses": statusList,
+	})
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -673,6 +716,50 @@ func UpdateDepartmentHandler(c *gin.Context) {
 	})
 }
 
+// GetDepartmentHandler retrieves details of a specific department by ID
+func GetDepartmentHandler(c *gin.Context) {
+	// Get department ID from the URL parameter
+	departmentID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid department ID"})
+		return
+	}
+
+	// Call the GetDepartment function to retrieve the department details
+	department, err := GetDepartment(c, departmentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if department == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Department not found"})
+		return
+	}
+
+	// Return the department details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Department retrieved successfully",
+		"department": department,
+	})
+}
+
+// ListDepartmentsHandler retrieves a list of all departments
+func ListDepartmentsHandler(c *gin.Context) {
+	// Call the ListDepartments function to retrieve the list of departments
+	departments, err := ListDepartments(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of departments in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "List of departments retrieved successfully",
+		"departments": departments,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!-----------------------------------------------------------PRIORITY----------------------------------------------------------------!*/
@@ -721,6 +808,50 @@ func UpdatePriorityHandler(c *gin.Context) {
 	})
 }
 
+// GetPriorityHandler retrieves details of a specific priority by ID
+func GetPriorityHandler(c *gin.Context) {
+	// Get priority ID from the URL parameter
+	priorityID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid priority ID"})
+		return
+	}
+
+	// Call the GetPriority function to retrieve the priority details
+	priority, err := GetPriority(c, priorityID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if priority == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Priority not found"})
+		return
+	}
+
+	// Return the priority details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Priority retrieved successfully",
+		"priority": priority,
+	})
+}
+
+// ListPrioritiesHandler retrieves a list of all priorities
+func ListPrioritiesHandler(c *gin.Context) {
+	// Call the ListPriorities function to retrieve the list of priorities
+	priorities, err := ListPriorities(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of priorities in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "List of priorities retrieved successfully",
+		"priorities": priorities,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!----------------------------------------------------------POSITIONS----------------------------------------------------------------!*/
@@ -764,6 +895,50 @@ func UpdatePositionHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "Position updated successfully",
 		"updatedPolicy": updatedPolicy,
+	})
+}
+
+// GetPositionHandler retrieves details of a specific position by ID
+func GetPositionHandler(c *gin.Context) {
+	// Get position ID from the URL parameter
+	positionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid position ID"})
+		return
+	}
+
+	// Call the GetPosition function to retrieve the position details
+	position, err := GetPosition(c, positionID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if position == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Position not found"})
+		return
+	}
+
+	// Return the position details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Position retrieved successfully",
+		"position": position,
+	})
+}
+
+// ListPositionsHandler retrieves a list of all positions
+func ListPositionsHandler(c *gin.Context) {
+	// Call the ListPositions function to retrieve the list of positions
+	positions, err := ListPositions(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of positions in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "List of positions retrieved successfully",
+		"positions": positions,
 	})
 }
 
@@ -817,6 +992,50 @@ func UpdateSlaHandler(c *gin.Context) {
 	})
 }
 
+// GetSLAHandler retrieves details of a specific SLA by ID
+func GetSLAHandler(c *gin.Context) {
+	// Get SLA ID from the URL parameter
+	slaID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SLA ID"})
+		return
+	}
+
+	// Call the GetSLA function to retrieve the SLA details
+	sla, err := GetSla(c, slaID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if sla == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "SLA not found"})
+		return
+	}
+
+	// Return the SLA details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "SLA retrieved successfully",
+		"sla":     sla,
+	})
+}
+
+// ListSLAsHandler retrieves a list of all SLAs
+func ListSLAsHandler(c *gin.Context) {
+	// Call the ListSLAs function to retrieve the list of SLAs
+	slas, err := ListSla(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of SLAs in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "List of SLAs retrieved successfully",
+		"slas":    slas,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!--------------------------------------------------------SATISFACTION---------------------------------------------------------------!*/
@@ -861,6 +1080,50 @@ func UpdateSatisfactionHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":             "Satisfaction updated successfully",
 		"updatedSatisfaction": updatedSatisfaction,
+	})
+}
+
+// GetSatisfactionHandler retrieves details of a specific satisfaction by ID
+func GetSatisfactionHandler(c *gin.Context) {
+	// Get satisfaction ID from the URL parameter
+	satisfactionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid satisfaction ID"})
+		return
+	}
+
+	// Call the GetSatisfaction function to retrieve the satisfaction details
+	satisfaction, err := GetSatisfaction(c, satisfactionID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if satisfaction == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Satisfaction not found"})
+		return
+	}
+
+	// Return the satisfaction details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Satisfaction retrieved successfully",
+		"satisfaction": satisfaction,
+	})
+}
+
+// ListSatisfactionsHandler retrieves a list of all satisfactions
+func ListSatisfactionsHandler(c *gin.Context) {
+	// Call the ListSatisfactions function to retrieve the list of satisfactions
+	satisfactions, err := ListSatisfaction(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of satisfactions in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "List of satisfactions retrieved successfully",
+		"satisfactions": satisfactions,
 	})
 }
 
@@ -911,6 +1174,50 @@ func UpdatePoliciesHandler(c *gin.Context) {
 	})
 }
 
+// GetPoliciesHandler retrieves details of a specific policy by ID
+func GetPoliciesHandler(c *gin.Context) {
+	// Get policy ID from the URL parameter
+	policyID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid policy ID"})
+		return
+	}
+
+	// Call the GetPolicies function to retrieve the policy details
+	policy, err := GetPolicy(c, policyID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if policy == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Policy not found"})
+		return
+	}
+
+	// Return the policy details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Policy retrieved successfully",
+		"policy":  policy,
+	})
+}
+
+// ListPoliciesHandler retrieves a list of all policies
+func ListPoliciesHandler(c *gin.Context) {
+	// Call the ListPolicies function to retrieve the list of policies
+	policies, err := ListPolicies(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of policies in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "List of policies retrieved successfully",
+		"policies": policies,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!------------------------------------------------------------UNIT-------------------------------------------------------------------!*/
@@ -953,6 +1260,50 @@ func UpdateUnitHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "Unit updated successfully",
 		"updatedUnit": updatedUnit,
+	})
+}
+
+// GetUnitHandler retrieves details of a specific unit by ID
+func GetUnitHandler(c *gin.Context) {
+	// Get unit ID from the URL parameter
+	unitID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid unit ID"})
+		return
+	}
+
+	// Call the GetUnit function to retrieve the unit details
+	unit, err := GetUnit(c, unitID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if unit == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unit not found"})
+		return
+	}
+
+	// Return the unit details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Unit retrieved successfully",
+		"unit":    unit,
+	})
+}
+
+// ListUnitsHandler retrieves a list of all units
+func ListUnitsHandler(c *gin.Context) {
+	// Call the ListUnits function to retrieve the list of units
+	units, err := ListUnit(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of units in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "List of units retrieved successfully",
+		"units":   units,
 	})
 }
 
@@ -999,6 +1350,50 @@ func UpdateRoleHandler(c *gin.Context) {
 	})
 }
 
+// GetRoleHandler retrieves details of a specific role by ID
+func GetRoleHandler(c *gin.Context) {
+	// Get role ID from the URL parameter
+	roleID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
+		return
+	}
+
+	// Call the GetRole function to retrieve the role details
+	role, err := GetRole(c, roleID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if role == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
+		return
+	}
+
+	// Return the role details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Role retrieved successfully",
+		"role":    role,
+	})
+}
+
+// ListRolesHandler retrieves a list of all roles
+func ListRolesHandler(c *gin.Context) {
+	// Call the ListRoles function to retrieve the list of roles
+	roles, err := ListRoles(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of roles in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "List of roles retrieved successfully",
+		"roles":   roles,
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!----------------------------------------------------------CATEGORY-----------------------------------------------------------------!*/
@@ -1039,6 +1434,50 @@ func UpdateCategoryHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Category updated successfully",
 		"updatedCategory": updatedCategory,
+	})
+}
+
+// GetCategoryHandler retrieves details of a specific category by ID
+func GetCategoryHandler(c *gin.Context) {
+	// Get category ID from the URL parameter
+	categoryID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid category ID"})
+		return
+	}
+
+	// Call the GetCategory function to retrieve the category details
+	category, err := GetCategory(c, categoryID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if category == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
+		return
+	}
+
+	// Return the category details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Category retrieved successfully",
+		"category": category,
+	})
+}
+
+// ListCategoriesHandler retrieves a list of all categories
+func ListCategoriesHandler(c *gin.Context) {
+	// Call the ListCategories function to retrieve the list of categories
+	categories, err := ListCategories(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of categories in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "List of categories retrieved successfully",
+		"categories": categories,
 	})
 }
 
@@ -1084,5 +1523,49 @@ func UpdateSubCategoryHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":            "Sub-category updated successfully",
 		"updatedSubCategory": updatedSubCategory,
+	})
+}
+
+// GetSubCategoryHandler retrieves details of a specific subcategory by ID
+func GetSubCategoryHandler(c *gin.Context) {
+	// Get subcategory ID from the URL parameter
+	subcategoryID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid subcategory ID"})
+		return
+	}
+
+	// Call the GetSubCategory function to retrieve the subcategory details
+	subcategory, err := GetSubCategory(c, subcategoryID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if subcategory == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Subcategory not found"})
+		return
+	}
+
+	// Return the subcategory details in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Subcategory retrieved successfully",
+		"subcategory": subcategory,
+	})
+}
+
+// ListSubCategoriesHandler retrieves a list of all subcategories
+func ListSubCategoriesHandler(c *gin.Context) {
+	// Call the ListSubCategories function to retrieve the list of subcategories
+	subcategories, err := ListSubCategories(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of subcategories in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "List of subcategories retrieved successfully",
+		"subcategories": subcategories,
 	})
 }
