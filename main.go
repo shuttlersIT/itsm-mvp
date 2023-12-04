@@ -78,6 +78,8 @@ func main() {
 	api.POST("/register", handlers.Register)
 	api.POST("/formlogin", handlers.PasswordLogin)
 
+	//
+
 	//Index Route Router Group
 	authorized := api.Group("/")
 	authorized.Use(middleware.AuthorizeRequest())
@@ -87,6 +89,7 @@ func main() {
 		authorized.GET("/procurement", handlers.ItsmHandler)
 		authorized.GET("/admin", handlers.ItsmHandler)
 		authorized.GET("/testing", homeTest)
+		authorized.POST("/secure")
 	}
 
 	//router.Use(static.Serve("/", static.LocalFile("./templates", true)))

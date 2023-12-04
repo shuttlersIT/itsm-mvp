@@ -1521,7 +1521,7 @@ func UpdateSubCategoryHandler(c *gin.Context) {
 
 	// Return a success response
 	c.JSON(http.StatusOK, gin.H{
-		"message":            "Sub-category updated successfully",
+		"message":            "Sub-Category Updated Successfully",
 		"updatedSubCategory": updatedSubCategory,
 	})
 }
@@ -1531,7 +1531,7 @@ func GetSubCategoryHandler(c *gin.Context) {
 	// Get subcategory ID from the URL parameter
 	subcategoryID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid subcategory ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Sub-Category ID"})
 		return
 	}
 
@@ -1543,13 +1543,13 @@ func GetSubCategoryHandler(c *gin.Context) {
 	}
 
 	if subcategory == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Subcategory not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Sub-Category not found"})
 		return
 	}
 
 	// Return the subcategory details in the response
 	c.JSON(http.StatusOK, gin.H{
-		"message":     "Subcategory retrieved successfully",
+		"message":     "Sub-Category Retrieved Successfully",
 		"subcategory": subcategory,
 	})
 }
@@ -1565,7 +1565,7 @@ func ListSubCategoriesHandler(c *gin.Context) {
 
 	// Return the list of subcategories in the response
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "List of sub-categories retrieved successfully",
+		"message":       "List of Sub-Categories Retrieved Successfully",
 		"subcategories": subcategories,
 	})
 }
