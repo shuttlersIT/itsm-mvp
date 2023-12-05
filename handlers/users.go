@@ -139,22 +139,21 @@ func UpdateUsername(c *gin.Context, staffID int, username string, password strin
 	return id
 }
 
-// Delete a user by ID
-func DeleteUser(c *gin.Context) {
+// Delete a ticket by ID
+func DeleteUserOperation(c *gin.Context, tid int) (bool, error) {
+	id := tid
+
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
-		return
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
+		return false, fmt.Errorf("unable to reach DB")
 	}
-
-	session := sessions.Default(c)
-	id := session.Get("user-id")
 	_, err := db.Exec("DELETE FROM staff WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return false, err
 	}
-	c.JSON(http.StatusOK, "User deleted successfully")
+	return true, nil
 }
 
 // Create staff

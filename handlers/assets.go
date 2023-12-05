@@ -185,21 +185,22 @@ func UpdateAsset(c *gin.Context, a structs.Asset) (*structs.Asset, error) {
 }
 
 // Delete a Asset by ID
-func DeleteAsset(c *gin.Context, aid int) {
+func DeleteAsset(c *gin.Context, aid int) error {
 	id := aid
 
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		return fmt.Errorf("unable to reach db")
 	}
 	_, err := db.Exec("DELETE FROM assets WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fmt.Errorf("unable to delete ticket")
 	}
 	c.JSON(http.StatusOK, "Asset deleted successfully")
+	return nil
 }
 
 func updateAssetType(c *gin.Context, t structs.AssetType) (string, error) {

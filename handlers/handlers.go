@@ -135,6 +135,28 @@ func ListAgentsHandler(c *gin.Context) {
 	})
 }
 
+// DeleteUserHandler deletes a specific staff by ID
+func DeleteAgentHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	staffID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid staff ID"})
+		return
+	}
+
+	// Call the DeleteUser function to delete the asset
+	s, err := DeleteAgentOperation(c, staffID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Agent deleted successfully",
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!------------------------------------------------------------STAFF------------------------------------------------------------------!*/
@@ -240,6 +262,28 @@ func ListStaffHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "List of staff retrieved successfully",
 		"staff":   staffList,
+	})
+}
+
+// DeleteUserHandler deletes a specific staff by ID
+func DeleteStaffHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	staffID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid staff ID"})
+		return
+	}
+
+	// Call the DeleteUser function to delete the asset
+	s, err := DeleteUserOperation(c, staffID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Staff deleted successfully",
 	})
 }
 
@@ -391,6 +435,28 @@ func ListTicketsPageHandler(c *gin.Context) {
 	})
 }
 
+// DeleteAssetHandler deletes a specific asset by ID
+func DeleteTicketHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	assetID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the asset
+	s, err := DeleteTicketOperation(c, assetID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Ticket deleted successfully",
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!-----------------------------------------------------------STATUS------------------------------------------------------------------!*/
@@ -523,6 +589,28 @@ func ListStatusHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "List of statuses retrieved successfully",
 		"statuses": statusList,
+	})
+}
+
+// DeleteAssetHandler deletes a specific asset by ID
+func DeleteStatusHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	assetID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the asset
+	s, err := DeleteStatus(c, assetID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Ticket deleted successfully",
 	})
 }
 
@@ -670,6 +758,28 @@ func ListAssetHandler(c *gin.Context) {
 	})
 }
 
+// DeleteAssetHandler deletes a specific asset by ID
+func DeleteAssetHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	assetID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the asset
+	err = DeleteAsset(c, assetID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Asset deleted successfully",
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!----------------------------------------------------------DEPARTMENTS--------------------------------------------------------------!*/
@@ -757,6 +867,28 @@ func ListDepartmentsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "List of departments retrieved successfully",
 		"departments": departments,
+	})
+}
+
+// DeleteDeptHandler deletes a specific dept by ID
+func DeleteDepartmentHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	deptID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the dept
+	s, err := DeleteDepartment(c, deptID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Dept deleted successfully",
 	})
 }
 
@@ -852,6 +984,28 @@ func ListPrioritiesHandler(c *gin.Context) {
 	})
 }
 
+// DeleteDeptHandler deletes a specific dept by ID
+func DeletePriorityHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	pID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the dept
+	s, err := DeletePriority(c, pID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "priority deleted successfully",
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!----------------------------------------------------------POSITIONS----------------------------------------------------------------!*/
@@ -942,13 +1096,35 @@ func ListPositionsHandler(c *gin.Context) {
 	})
 }
 
+// DeleteDeptHandler deletes a specific dept by ID
+func DeletePositionHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	pID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the dept
+	s, err := DeleteDepartment(c, pID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Position deleted successfully",
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!-----------------------------------------------------------SLA---------------------------------------------------------------------!*/
 /*!-----------------------------------------------------------------------------------------------------------------------------------!*/
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func CreateSlaHandler(c *gin.Context) {
+func CreateSLAHandler(c *gin.Context) {
 	var s structs.Sla
 	s.SlaName = c.PostForm("slaName")
 	s.PriorityID, _ = strconv.Atoi(c.PostForm("priorityID"))
@@ -968,7 +1144,7 @@ func CreateSlaHandler(c *gin.Context) {
 }
 
 // UpdateSlaHandler updates an SLA
-func UpdateSlaHandler(c *gin.Context) {
+func UpdateSLAHandler(c *gin.Context) {
 	var sla structs.Sla
 	// Get SLA details from the request JSON or other sources
 	sla.SlaID, _ = strconv.Atoi(c.PostForm("slaID"))
@@ -1021,7 +1197,7 @@ func GetSLAHandler(c *gin.Context) {
 }
 
 // ListSLAsHandler retrieves a list of all SLAs
-func ListSLAsHandler(c *gin.Context) {
+func ListSLAHandler(c *gin.Context) {
 	// Call the ListSLAs function to retrieve the list of SLAs
 	slas, err := ListSla(c)
 	if err != nil {
@@ -1033,6 +1209,28 @@ func ListSLAsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "List of SLAs retrieved successfully",
 		"slas":    slas,
+	})
+}
+
+// DeleteSLAHandler deletes a specific dept by ID
+func DeleteSLAHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	slaID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid asset ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the dept
+	s, err := DeleteSla(c, slaID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Sla deleted successfully",
 	})
 }
 
@@ -1127,12 +1325,34 @@ func ListSatisfactionsHandler(c *gin.Context) {
 	})
 }
 
+// DeleteDeptHandler deletes a specific dept by ID
+func DeleteSatisfactionHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	satID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid satisfaction ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the dept
+	s, err := DeleteSatisfaction(c, satID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "satisfaction deleted successfully",
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!----------------------------------------------------------POLICIES-----------------------------------------------------------------!*/
 /*!-----------------------------------------------------------------------------------------------------------------------------------!*/
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-func CreatePoliciesHandler(c *gin.Context) {
+func CreatePolicyHandler(c *gin.Context) {
 	var pol structs.Policies
 	pol.PolicyName = c.PostForm("policyName")
 	pol.EmbeddedLink = c.PostForm("embeddedLink")
@@ -1151,7 +1371,7 @@ func CreatePoliciesHandler(c *gin.Context) {
 }
 
 // UpdatePoliciesHandler updates policy details
-func UpdatePoliciesHandler(c *gin.Context) {
+func UpdatePolicyHandler(c *gin.Context) {
 	var policies structs.Policies
 	// Get policy details from the request JSON or other sources
 	policies.PolicyID, _ = strconv.Atoi(c.PostForm("policyID"))
@@ -1175,7 +1395,7 @@ func UpdatePoliciesHandler(c *gin.Context) {
 }
 
 // GetPoliciesHandler retrieves details of a specific policy by ID
-func GetPoliciesHandler(c *gin.Context) {
+func GetPolicyHandler(c *gin.Context) {
 	// Get policy ID from the URL parameter
 	policyID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -1215,6 +1435,28 @@ func ListPoliciesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "List of policies retrieved successfully",
 		"policies": policies,
+	})
+}
+
+// DeleteDeptHandler deletes a specific dept by ID
+func DeletePolicyHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	pID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid unit ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the dept
+	s, err := DeletePolicy(c, pID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Policy deleted successfully",
 	})
 }
 
@@ -1307,6 +1549,28 @@ func ListUnitsHandler(c *gin.Context) {
 	})
 }
 
+// DeleteDeptHandler deletes a specific dept by ID
+func DeleteUnitHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	uID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid unit ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the dept
+	s, err := DeleteUnit(c, uID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Unit deleted successfully",
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!-----------------------------------------------------------ROLE--------------------------------------------------------------------!*/
@@ -1391,6 +1655,28 @@ func ListRolesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "List of roles retrieved successfully",
 		"roles":   roles,
+	})
+}
+
+// DeleteDeptHandler deletes a specific dept by ID
+func DeleteRoleHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	rID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
+		return
+	}
+
+	// Call the DeleteAsset function to delete the dept
+	s, err := DeleteRole(c, rID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Role deleted successfully",
 	})
 }
 
@@ -1481,6 +1767,28 @@ func ListCategoriesHandler(c *gin.Context) {
 	})
 }
 
+// DeleteCategoryHandler deletes a specific dept by ID
+func DeleteCategoryHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	cID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid category ID"})
+		return
+	}
+
+	// Call the DeleteCategory function to delete the dept
+	s, err := DeleteCategory(c, cID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Category deleted successfully",
+	})
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*!___________________________________________________________________________________________________________________________________!*/
 /*!---------------------------------------------------------SUBCATEGORY---------------------------------------------------------------!*/
@@ -1567,5 +1875,27 @@ func ListSubCategoriesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "List of sub-categories retrieved successfully",
 		"subcategories": subcategories,
+	})
+}
+
+// DeleteCategoryHandler deletes a specific dept by ID
+func DeleteSubCategoryHandler(c *gin.Context) {
+	// Get asset ID from the URL parameter
+	scID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sub-category ID"})
+		return
+	}
+
+	// Call the DeleteSubCategory function to delete the dept
+	s, err := DeleteSubCategory(c, scID)
+	if err != nil || !s {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return a success message in the response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "SubCategory deleted successfully",
 	})
 }

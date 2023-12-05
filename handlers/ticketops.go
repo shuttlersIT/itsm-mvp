@@ -66,23 +66,23 @@ func UpdateSla(c *gin.Context, slaID int, slaName string, priorityID int, satisf
 }
 
 // Delete SLA by ID
-func DeleteSla(c *gin.Context, slaID int) (*string, error) {
+func DeleteSla(c *gin.Context, slaID int) (bool, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update SLA handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := slaID
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM sla WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "SLA deletion failed"
-		return &status, err
+		//status = "SLA deletion failed"
+		return false, err
 	}
-	status = "SLA deleted successfully"
-	return &status, nil
+	//status = "SLA deleted successfully"
+	return true, nil
 }
 
 // Create SLA
@@ -205,24 +205,25 @@ func UpdatePriority(c *gin.Context, priorityID int, priorityName string, firstRe
 }
 
 // Delete a priority by ID
-func DeletePriority(c *gin.Context, priorityID int) (*string, error) {
+func DeletePriority(c *gin.Context, priorityID int) (bool, error) {
+
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update priority handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := priorityID
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM priority WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Priority deletion failed"
-		return &status, err
+		//status = "Priority deletion failed"
+		return false, err
 	}
-	status = "Priority deleted successfully"
-	return &status, nil
+	//status = "Priority deleted successfully"
+	return true, nil
 }
 
 // Create Priority
@@ -312,24 +313,24 @@ func GetSatisfaction(c *gin.Context, satisfactionID int) (*structs.Satisfaction,
 }
 
 // Delete a Satisfaction Rank by ID
-func DeleteSatisfaction(c *gin.Context, satisfactionID int) (*string, error) {
+func DeleteSatisfaction(c *gin.Context, satisfactionID int) (bool, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := satisfactionID
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM satisfaction WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Satisfaction Rank deletion failed"
-		return &status, err
+		//status = "Satisfaction Rank deletion failed"
+		return false, err
 	}
-	status = "Satisfaction Rank deleted successfully"
-	return &status, nil
+	//status = "Satisfaction Rank deleted successfully"
+	return true, nil
 }
 
 // Update Satisfaction Rank by ID
@@ -486,23 +487,23 @@ func UpdatePolicy(c *gin.Context, policyID int, policyName string, embeddedLink 
 }
 
 // Delete a policy by ID
-func DeletePolicy(c *gin.Context, policyID int) (*string, error) {
+func DeletePolicy(c *gin.Context, policyID int) (bool, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from delete policy handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := policyID
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM policy WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Policy deletion failed"
-		return &status, err
+		//status = "Policy deletion failed"
+		return false, err
 	}
-	status = "Policy deleted successfully"
-	return &status, nil
+	//status = "Policy deleted successfully"
+	return true, nil
 }
 
 // Create policy
@@ -612,24 +613,24 @@ func UpdatePosition(c *gin.Context, positionID int, positionName string, cadreNa
 }
 
 // Delete a position by ID
-func DeletePosition(c *gin.Context, positionID int) (*string, error) {
+func DeletePosition(c *gin.Context, positionID int) (bool, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from delete position handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := positionID
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM positions WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Position deletion failed"
-		return &status, err
+		//status = "Position deletion failed"
+		return false, err
 	}
-	status = "Position deleted successfully"
-	return &status, nil
+	//status = "Position deleted successfully"
+	return true, nil
 }
 
 // Create position
@@ -744,24 +745,24 @@ func UpdateDepartment(c *gin.Context, departmentID int, departmentName string, e
 }
 
 // Delete a department by ID
-func DeleteDepartment(c *gin.Context, departmentID int) (*string, error) {
+func DeleteDepartment(c *gin.Context, departmentID int) (bool, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from delete department handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := departmentID
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM departments WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Department deletion failed"
-		return &status, err
+		//status = "Department deletion failed"
+		return false, err
 	}
-	status = "Department deleted successfully"
-	return &status, nil
+	//status = "Department deleted successfully"
+	return true, nil
 }
 
 // Create department
@@ -873,24 +874,24 @@ func UpdateUnit(c *gin.Context, unitID int, unitName string, emoji string) (*str
 }
 
 // Delete a unit by ID
-func DeleteUnit(c *gin.Context, unitID int) (*string, error) {
+func DeleteUnit(c *gin.Context, unitID int) (bool, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from delete unit handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := unitID
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM units WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Unit deletion failed"
-		return &status, err
+		//status = "Unit deletion failed"
+		return false, err
 	}
-	status = "Unit deleted successfully"
-	return &status, nil
+	//status = "Unit deleted successfully"
+	return true, nil
 }
 
 // Create unit
@@ -1001,24 +1002,24 @@ func UpdateRole(c *gin.Context, roleID int, roleName string) (*structs.Role, err
 }
 
 // Delete a role by ID
-func DeleteRole(c *gin.Context, roleID int) (*string, error) {
+func DeleteRole(c *gin.Context, roleID int) (bool, error) {
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from delete role handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := roleID
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM roles WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Role deletion failed"
-		return &status, err
+		//status = "Role deletion failed"
+		return false, err
 	}
-	status = "Role deleted successfully"
-	return &status, nil
+	//status = "Role deleted successfully"
+	return true, nil
 }
 
 // Create Role
@@ -1130,23 +1131,23 @@ func UpdateCategory(c *gin.Context, cid structs.Category) (*structs.Category, er
 }
 
 // Delete a category by ID
-func DeleteCategory(c *gin.Context, cid int) (*string, error) {
+func DeleteCategory(c *gin.Context, cid int) (bool, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := cid
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM category WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Category deletion failed"
-		return &status, err
+		//status = "Category deletion failed"
+		return false, err
 	}
-	status = "Category deleted successfully"
-	return &status, nil
+	//status = "Category deleted successfully"
+	return true, nil
 }
 
 // Create category
@@ -1260,23 +1261,23 @@ func UpdateSubCategory(c *gin.Context, scid structs.SubCategory) (*structs.SubCa
 }
 
 // Delete a Subcategory by ID
-func DeleteSubCategory(c *gin.Context, scid int) (*string, error) {
+func DeleteSubCategory(c *gin.Context, scid int) (bool, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := scid
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM sub_category WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Sub-Category deletion failed"
-		return &status, err
+		//status = "Sub-Category deletion failed"
+		return false, err
 	}
-	status = "Sub-Category deleted successfully"
-	return &status, nil
+	//status = "Sub-Category deleted successfully"
+	return true, nil
 }
 
 // Create Subcategory
@@ -1412,23 +1413,23 @@ func UpdateStatus(c *gin.Context, s structs.Status) (*structs.Status, error) {
 }
 
 // Delete a Status by ID
-func DeleteStatus(c *gin.Context, sid int) (*string, error) {
+func DeleteStatus(c *gin.Context, sid int) (bool, error) {
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get update user handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 
 	id := sid
-	var status string
+	//var status string
 	_, err := db.Exec("DELETE FROM status WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Status deletion failed"
-		return &status, err
+		//status = "Status deletion failed"
+		return false, err
 	}
-	status = "Status deleted successfully"
-	return &status, nil
+	//status = "Status deleted successfully"
+	return true, nil
 }
 
 // Create Status

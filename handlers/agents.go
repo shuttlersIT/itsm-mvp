@@ -88,22 +88,21 @@ func UpdateAgentHandlers(c *gin.Context) {
 }
 
 // Delete an agent by ID
-func DeleteAgentHandlers(c *gin.Context) {
-	// Don't forget type assertion when getting the connection from context.
+// Delete a ticket by ID
+func DeleteAgentOperation(c *gin.Context, tid int) (bool, error) {
+	id := tid
+
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get agent handler"})
+		return false, fmt.Errorf("unable to reach DB")
 	}
-
-	adminSession := sessions.Default(c)
-	id := adminSession.Get("user-id")
 	_, err := db.Exec("DELETE FROM agents WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return false, err
 	}
-	c.JSON(http.StatusOK, "Agent deleted successfully")
+	return true, nil
 }
 
 // List all Agents

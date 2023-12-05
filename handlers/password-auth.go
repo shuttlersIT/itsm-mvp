@@ -121,7 +121,7 @@ func GetStaff(c *gin.Context, id int) (int, string, string, string, int, int, in
 }
 
 // Register with Username & Password
-func Register(c *gin.Context) {
+func RegisterHandler(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	first_name := c.PostForm("first_name")
@@ -157,7 +157,7 @@ func Register(c *gin.Context) {
 }
 
 // Login with Username & Password
-func PasswordLogin(c *gin.Context) {
+func PasswordLoginHandler(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	// Retrieve the hashed password from the user store (replace with database query)
@@ -224,7 +224,7 @@ func GetStaffIdHandler(c *gin.Context) int {
 }
 
 // Update Username
-func UpdateUserName(c *gin.Context) {
+func UpdateUserNameHandler(c *gin.Context) {
 	var positionError error
 	var departmentError error
 	//var positionDB *structs.Position
@@ -291,7 +291,9 @@ func UpdateUserName(c *gin.Context) {
 }
 
 // Update Password
-func ChangeUserPassword(c *gin.Context, username string) {
+func ChangeUserPasswordHandler(c *gin.Context) {
+	username := c.PostForm("unitName")
+
 	// Don't forget type assertion when getting the connection from context.
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {

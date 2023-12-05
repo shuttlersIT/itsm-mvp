@@ -143,23 +143,20 @@ func UpdateTicketOperation(c *gin.Context, t structs.Ticket) (*structs.Ticket, e
 }
 
 // Delete a ticket by ID
-func DeleteTicketOperation(c *gin.Context, tid int) (*string, error) {
+func DeleteTicketOperation(c *gin.Context, tid int) (bool, error) {
 	id := tid
-	var status string
 
 	db, ok := c.MustGet("databaseConn").(*sql.DB)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to reach DB from get user handler"})
-		return nil, fmt.Errorf("unable to reach DB")
+		return false, fmt.Errorf("unable to reach DB")
 	}
 	_, err := db.Exec("DELETE FROM tickets WHERE id = ?", id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		status = "Ticket deletion failed"
-		return &status, err
+		return false, err
 	}
-	status = "Ticket deleted successfully"
-	return &status, nil
+	return true, nil
 }
 
 /*----------------------------------------------------------------------------------------------------------------------------------------*/
