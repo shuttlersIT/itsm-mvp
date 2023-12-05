@@ -38,11 +38,46 @@ func RandToken(l int) (string, error) {
 	return base64.StdEncoding.EncodeToString(b), nil
 }
 
+// Generate User Token
+func JwtToken(userID int, username string) (bool, string, error) {
+	status := false
+
+	// Generate a token
+	token, err := stafftokenization.GenerateToken(userID, username)
+	if err != nil {
+		fmt.Println("Error generating token:", err)
+		status = false
+		return status, token, fmt.Errorf("unable to generate token")
+	}
+	status = true
+
+	//fmt.Println("Generated Token:", token)
+	return status, token, nil
+}
+
 // Share databases
 func ShareDb(d *sql.DB, c *gin.Context) *sql.DB {
 	db := d
 	database.TableExists(db, "tickets")
 	return d
+}
+
+func RetrieveClaim(c *gin.Context, token string) (*stafftokenization.CustomClaims, bool, error) {
+	status := false
+
+	// Parse the token
+	claims, err := stafftokenization.ParseToken(token)
+	if err != nil {
+		fmt.Println("Error parsing token:", err)
+		status = false
+		return nil, status, fmt.Errorf("unable to retrieve api session details")
+	}
+
+	status = true
+	//fmt.Println("User ID:", claims.UserID)
+	//fmt.Println("Username:", claims.Username)
+
+	return claims, status, err
 }
 
 func getID(e string, c *gin.Context) (int, string, error) {
@@ -96,7 +131,6 @@ func AuthHandler(c *gin.Context) {
 	// Handle the exchange code to initiate a transport.
 	userSession := sessions.Default(c)
 	userToken := userSession.Get("user-token-gen-on-server-side")
-
 	if userToken != nil {
 		// Retrieve user_id from session
 		token, _ := userToken.(string)
@@ -145,17 +179,19 @@ func AuthHandler(c *gin.Context) {
 		return
 	}
 
-	//
-	userId, _, _ := getID(u.Email, c)
-	//seen := false
-	userEmail := userSession.Get("user-Email")
-	_, token, e := JwtToken(userId, u.Email)
-	if e != nil {
-		log.Fatal("unable to set token in session", e)
+	// Get user ID
+	userSession.Set("user-email", u.Email)
+	userSession.Set("user-name", u.Name)
+
+	err = userSession.Save()
+	if err != nil {
+		log.Println(err)
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{"message": "Error while saving session. Please try again."})
+		return
 	}
 
-	userSession.Set("user-name", u.Name)
-	userSession.Set("user-token-gen-on-server-side", token)
+	//
+	userId, _, _ := getID(u.Email, c)
 	userSession.Set("id", userId)
 	userSession.Set("user-email", u.Email)
 	userSession.Set("user-firstName", u.GivenName)
@@ -167,9 +203,17 @@ func AuthHandler(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "error.html", gin.H{"message": "Error while saving session. Please try again."})
 		return
 	}
+	//seen := false
+	userEmail := userSession.Get("user-Email")
+	_, token, e := JwtToken(userId, u.Email)
+	userSession.Set("user-token-gen-on-server-side", token)
+	if e != nil {
+		log.Fatal("unable to set token in session", e)
+	}
+	//fmt.Println(userEmail)
+	//fmt.Println(userSession)
+	//uName := session.Get("user-name")
 
-	// Return a response with the generated token
-	c.JSON(http.StatusOK, gin.H{"access_token": token, "user_email": u.Email})
 	c.HTML(http.StatusOK, "itsm.html", gin.H{"Username": userEmail})
 	//c.HTML(http.StatusOK, "home.html", gin.H{"name": uNam, "Username": userID, "seen": seen})
 

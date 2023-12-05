@@ -12,3 +12,8 @@ type User struct {
 	EmailVerified bool   `json:"email_verified"`
 	Gender        string `json:"gender"`
 }
+
+type Credentials struct {
+	Cid     string `json:"cid"`
+	Csecret string `json:"csecret"`
+}
