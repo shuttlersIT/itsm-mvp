@@ -2,6 +2,7 @@ package routers
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/contrib/sessions"
@@ -12,18 +13,18 @@ import (
 	"github.com/shuttlersIT/itsm-mvp/middleware"
 )
 
-// SetupAPIRouter sets up the API router
-func SetupAPIRouter(api *gin.Engine, db *sql.DB) {
+func SetupAPIRouter2(api *gin.Engine, db *sql.DB) {
 	api.Use(middleware.ApiMiddleware(db))
 
-	// Setup Redis session store
 	token, err := handlers.RandToken(64)
 	if err != nil {
 		log.Fatal("unable to generate random token: ", err)
 	}
+
 	store, storeError := sessions.NewRedisStore(10, "tcp", "redisDB:6379", "", []byte(token))
 	if storeError != nil {
-		log.Fatal("Unable to create save session with redis session: ", storeError)
+		fmt.Println(storeError)
+		log.Fatal("Unable to create save session with redis session ", storeError)
 	}
 	store.Options(sessions.Options{
 		Path:     "/",
@@ -33,11 +34,13 @@ func SetupAPIRouter(api *gin.Engine, db *sql.DB) {
 	})
 	api.Use(sessions.Sessions("itsmsession", store))
 
-	// Set up middleware
 	api.Use(gin.Logger())
 	api.Use(gin.Recovery())
+	api.Static("/css", "templates/css")
+	api.Static("/img", "templates/img")
+	api.Static("/js", "templates/js")
+	api.LoadHTMLGlob("templates/*.html")
 
-	// Define API routes
 	api.GET("/", handlers.IndexHandler)
 	api.GET("/index", handlers.IndexHandler)
 	api.GET("/login", handlers.LoginHandler)
@@ -45,14 +48,17 @@ func SetupAPIRouter(api *gin.Engine, db *sql.DB) {
 	api.GET("/logout", handlers.LogoutHandler)
 	api.GET("/login/admin", handlers.GetAgentHandler)
 
-	// Define API router group for authorized routes
-	authorized := api.Group("/itsm")
+	// Add other API routes as needed
+
+	// Index Route Router Group
+	authorized := api.Group("/")
 	authorized.Use(middleware.AuthorizeRequest())
 	{
-		authorized.GET("/itsm/tickets", handlers.ItsmHandler)
-		authorized.GET("/itsm/assets", handlers.ItsmHandler)
-		authorized.GET("/itsm/procurement", handlers.ItsmHandler)
-		authorized.GET("/itsm/admin", handlers.ItsmHandler)
+		authorized.GET("/itsm", handlers.ItsmHandler)
+		authorized.GET("/assets", handlers.ItsmHandler)
+		authorized.GET("/procurement", handlers.ItsmHandler)
+		authorized.GET("/admin", handlers.ItsmHandler)
+		//authorized.GET("/testing", handlers.HomeTest)
 	}
 
 	// Add other API groups and routes as needed

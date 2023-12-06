@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Consumer</title>
+</head>
+<body>
+    <div id="ticketList"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Replace the API_URL with your actual API endpoint
+            const API_URL = 'https://your-api-url.com/api/tickets';
+
+            // Fetch tickets from the API
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(tickets => {
+                    // Display tickets on the page
+                    const ticketListElement = document.getElementById('ticketList');
+                    ticketListElement.innerHTML = '<h2>Ticket List</h2>';
+
+                    tickets.forEach(ticket => {
+                        const ticketItem = document.createElement('div');
+                        ticketItem.textContent = `Ticket ID: ${ticket.id}, Title: ${ticket.title}, Status: ${ticket.status}`;
+                        ticketListElement.appendChild(ticketItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        });
+    </script>
+</body>
+</html>

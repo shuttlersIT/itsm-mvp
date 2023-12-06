@@ -2,6 +2,7 @@ package routers
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/contrib/sessions"
@@ -11,18 +12,18 @@ import (
 	"github.com/shuttlersIT/itsm-mvp/middleware"
 )
 
-// SetupMainRouter sets up the main router
-func SetupMainRouter(router *gin.Engine, db *sql.DB) {
+func SetupMainRouter2(router *gin.Engine, db *sql.DB) {
 	router.Use(middleware.ApiMiddleware(db))
 
-	// Setup Redis session store
 	token, err := handlers.RandToken(64)
 	if err != nil {
 		log.Fatal("unable to generate random token: ", err)
 	}
+
 	store, storeError := sessions.NewRedisStore(10, "tcp", "redisDB:6379", "", []byte(token))
 	if storeError != nil {
-		log.Fatal("Unable to create save session with redis session: ", storeError)
+		fmt.Println(storeError)
+		log.Fatal("Unable to create save session with redis session ", storeError)
 	}
 	store.Options(sessions.Options{
 		Path:     "/",
@@ -32,17 +33,13 @@ func SetupMainRouter(router *gin.Engine, db *sql.DB) {
 	})
 	router.Use(sessions.Sessions("itsmsession", store))
 
-	// Set up middleware
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-
-	// Serve static files
 	router.Static("/css", "templates/css")
 	router.Static("/img", "templates/img")
 	router.Static("/js", "templates/js")
 	router.LoadHTMLGlob("templates/*.html")
 
-	// Define main routes
 	router.GET("/", handlers.IndexHandler)
 	router.GET("/index", handlers.IndexHandler)
 	router.GET("/login", handlers.LoginHandler)
@@ -50,12 +47,24 @@ func SetupMainRouter(router *gin.Engine, db *sql.DB) {
 	router.GET("/logout", handlers.LogoutHandler)
 	router.GET("/login/admin", handlers.GetAgentHandler)
 
-	// Define main router group for authorized routes
+	// Add other main routes as needed
+
+	// Index Route Router Group
 	authorized := router.Group("/")
 	authorized.Use(middleware.AuthorizeRequest())
 	{
+		authorized.GET("/itsm", handlers.ItsmHandler)
+		authorized.GET("/assets", handlers.ItsmHandler)
+		authorized.GET("/procurement", handlers.ItsmHandler)
 		authorized.GET("/admin", handlers.ItsmHandler)
+		//authorized.GET("/testing", handlers.HomeTest)
 	}
 
 	// Add other main groups and routes as needed
+
+	// Example routes for creating entities
+	//router.POST("/createStaff", handlers.CreateStaffHandler)
+	//router.POST("/createAgent", handlers.CreateAgentHandler)
+	//router.POST("/createStatus", handlers.CreateStatusHandler)
+	//router.POST("/createAsset", handlers.CreateAssetHandler)
 }
