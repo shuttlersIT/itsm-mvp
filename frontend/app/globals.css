@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Gordita";
+  src: url("../font/Gordita-Medium.eot"); /* IE9 Compat Modes */
+  src:
+    url("../font/Gordita-Medium.eot?#iefix") format("embedded-opentype"),
+    /* IE6-IE8 */ url("../font/Gordita-Medium.woff2") format("woff2"),
+    /* Super Modern Browsers */ url("../font/Gordita-Medium.woff")
+      format("woff"),
+    /* Pretty Modern Browsers */ url("../font/Gordita-Medium.ttf")
+      format("truetype"); /* Safari, Android, iOS */
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Gordita";
+  src: url("../font/Gordita-Bold.eot"); /* IE9 Compat Modes */
+  src:
+    url("../font/Gordita-Bold.eot?#iefix") format("embedded-opentype"),
+    /* IE6-IE8 */ url("../font/Gordita-Bold.woff2") format("woff2"),
+    /* Super Modern Browsers */ url("../font/Gordita-Bold.woff") format("woff"),
+    /* Pretty Modern Browsers */ url("../font/Gordita-Bold.ttf")
+      format("truetype"); /* Safari, Android, iOS */
+  font-weight: 700;
+  font-style: normal;
+}
+
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scroll {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+body {
+  font-family: "Gordita", sans-serif;
+  /* 72px - Narrow 768px-1263px  */
+  /* 244px - Medium 1264px-1919 */
+  /* 355px - Wide 1920 */
+}
